@@ -1,0 +1,15 @@
+name: E2E (preview)
+# Runs Playwright against a Vercel preview deployment once the Playwright suite exists
+# (milestone 12). Until then this workflow only checks that the preview answers /api/health.
+on:
+  deployment_status:
+
+jobs:
+  smoke:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Preview'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check on preview
+        run: |
+          url="${{ github.event.deployment_status.target_url }}/api/health"
+          curl -fsS --retry 5 --retry-delay 5 "$url"
