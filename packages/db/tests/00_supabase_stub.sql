@@ -1,4 +1,9 @@
 -- Minimal stand-in for the parts of Supabase the migrations rely on. Test use only.
+-- The postgis/postgis image pre-installs PostGIS in public; Supabase keeps it in the extensions schema.
+drop extension if exists postgis_tiger_geocoder cascade;
+drop extension if exists postgis_topology cascade;
+drop extension if exists postgis cascade;
+
 create schema if not exists auth;
 create schema if not exists extensions;
 
