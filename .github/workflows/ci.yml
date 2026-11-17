@@ -26,3 +26,21 @@ jobs:
       - name: Forecast backtest (fails on regression)
         run: pnpm backtest
       - run: pnpm build
+
+  db:
+    # Applies migrations + seed to a real PostGIS database and runs RLS/guard assertions.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migrations and RLS tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: packages/db/scripts/test.sh
