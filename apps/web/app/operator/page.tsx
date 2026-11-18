@@ -16,7 +16,7 @@ export default async function Operator() {
   return (
     <main style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
       <h1>Your lots</h1>
-      <p>{user?.email} · <Link href="/operator/lots/new">Add a lot</Link></p>
+      <p>{user?.email} · <Link href="/operator/lots/new">Add a lot</Link> · <Link href="/operator/integrations">Integrations</Link></p>
       {rows.length === 0 ? <p>No lots yet. Add one to get started.</p> : <LiveLots lots={rows} />}
       <form action="/auth/signout" method="post"><button type="submit">Sign out</button></form>
     </main>
