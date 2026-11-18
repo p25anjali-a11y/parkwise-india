@@ -118,4 +118,11 @@ select test_helpers.expect_error($$insert into public.occupancy_events (lot_id, 
   values ('00000000-0000-4000-8000-000000000101', now(), 'entry', 'webhook', 'k1'), ('00000000-0000-4000-8000-000000000101', now(), 'entry', 'webhook', 'k1')$$,
   'duplicate idempotency key is rejected');
 
+-- ---- real data only ----
+select test_helpers.expect_error($$insert into public.lots (org_id, name, city, category, lat, lng, is_synthetic)
+  select id, 'x', 'Mumbai', 'mall', 19, 72.8, true from public.organizations limit 1$$,
+  'synthetic lots are refused outside a test session');
+select test_helpers.expect_eq((select count(*) from public.price_quotes where predicted_occupancy is null and false), 0, 'quotes may omit occupancy (column nullable)');
+select test_helpers.expect_eq((select (is_nullable = 'YES')::int from information_schema.columns where table_name = 'price_quotes' and column_name = 'predicted_occupancy'), 1, 'predicted_occupancy is nullable');
+
 \echo ALL DB ASSERTIONS PASSED

@@ -52,6 +52,6 @@ export async function runForecasts(admin: Admin, now = new Date()): Promise<{ lo
     if (error) return { error: error.message, written };
     written += Math.min(500, rows.length - i);
   }
-  await admin.from("data_source_health").update({ last_success_at: now.toISOString() }).eq("source", "synthetic-occupancy");
+  await admin.from("data_source_health").update({ last_success_at: now.toISOString() }).eq("source", "parking-feed");
   return { lots: inputs.length, rows: written };
 }

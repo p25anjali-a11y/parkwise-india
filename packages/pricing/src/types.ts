@@ -45,12 +45,24 @@ export interface DemandSignals {
   congestionIndex?: number;
 }
 
+/** One real-world input to a quote and whether it could be used. Missing or stale inputs are never guessed. */
+export interface DataInput {
+  name: "occupancy" | "traffic" | "weather" | "events";
+  status: "used" | "missing" | "stale";
+  /** Where the value came from, e.g. "partner feed", "TomTom", "Open-Meteo". */
+  source?: string;
+  /** When the underlying observation was made (ISO). */
+  asOf?: string;
+}
+
 export interface QuoteInput {
   lotId: string;
   zoneId: string;
   rules: PricingRules;
-  /** Predicted occupancy at arrival (0..1), from the forecast service. */
-  predictedOccupancy: number;
+  /** Occupancy at arrival (0..1) from fresh real data. null when there is none: the price then stays at base plus any fresh signals. */
+  predictedOccupancy: number | null;
+  /** What was available, for transparency. Recorded with the quote. */
+  inputs?: DataInput[];
   arrivalTime: Date;
   durationMin: number;
   signals?: DemandSignals;
@@ -58,7 +70,7 @@ export interface QuoteInput {
   previousMultiplier?: number;
 }
 
-export type StepKind = "base" | "tier" | "signal" | "event" | "smoothing" | "clamp" | "override" | "cap" | "disabled";
+export type StepKind = "base" | "no_data" | "tier" | "signal" | "event" | "smoothing" | "clamp" | "override" | "cap" | "disabled";
 
 export interface BreakdownStep {
   kind: StepKind;
@@ -72,7 +84,7 @@ export interface Quote {
   zoneId: string;
   arrivalTime: string;
   durationMin: number;
-  predictedOccupancy: number;
+  predictedOccupancy: number | null;
   multiplier: number;
   ratePerHour: Paise;
   baseRatePerHour: Paise;
@@ -82,6 +94,7 @@ export interface Quote {
   /** Driver-facing label. */
   label: "off-peak" | "standard" | "peak";
   overstayRatePerHour: Paise;
+  inputs: DataInput[];
 }
 
 export interface LockedQuote extends Quote {

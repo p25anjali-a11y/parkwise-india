@@ -8,22 +8,22 @@ Everything below is as of the end of milestone 12. "Tested" means unit tests, DB
 |---|---|---|
 | Database, RLS, auth tables | **Real.** Supabase project in Mumbai, migrations 0001 to 0005 applied | 23 tables with RLS and 34 policies confirmed on the live project; DB assertions run on PostGIS in CI. Reservation and feed functions were verified for existence and privileges on the live DB, and behaviour in CI only |
 | Auth (email and password) | Built, **not exercised signed-in** | No account has been created yet; email confirmation is on |
-| Occupancy data | **Synthetic.** 15 invented lots, 43,965 snapshots | Names are real places; capacities, tariffs and counts are invented. Flagged `is_synthetic` and labelled in the UI |
+| Lots and occupancy | **None loaded.** The demo seed is removed (migration 0006). Lots exist only when an operator or partner adds them; occupancy comes only from a connected feed or our own bookings | A lot with no fresh occupancy shows its base tariff and "No live availability". Synthetic lots are blocked by a database trigger outside test databases |
 | Feeds: signed webhook, CSV | Built and tested | No operator is connected. Webhook secrets need `FEED_ENCRYPTION_KEY` |
 | Feeds: FASTag, ANPR/barrier vendors, external availability | **Stubs** | Always throw "requires partnership" |
-| Forecast | TypeScript baseline, **trained on synthetic data only** | Backtest numbers are synthetic; no better than persistence at 30 minutes. Congestion coefficient is a hand-set prior. Python service is a **stub** (persistence) |
-| Pricing engine | Real logic, demo parameters | Defaults (₹60/hr base, tiers, caps) are placeholders, not market-tested |
+| Forecast | TypeScript baseline, fitted per lot from that lot's **real** recorded occupancy | Needs real history (cold-start flagged); never used when stale or cold-start. The synthetic generator is a test fixture, not exported |
+| Pricing engine | Real logic, **freshness-gated** | Only real inputs count: occupancy under 30 min old (or a fresh forecast), traffic under 30 min, weather under 3 h, imported or operator events. Missing or stale inputs are skipped, listed on the quote, and the price falls back to base tariff. Default tariff/tiers are still unvalidated placeholders |
 | Quotes | Built; persisted only when the service key is set | Immutable `price_quotes` |
 | Reservations and holds | Built; DB functions tested in CI | Not run end to end on the live site (needs service key). No parallel-session concurrency test |
 | Payments | **Mock UPI** by default; Razorpay test-mode adapter written | Adapter tested with fake responses only. Refunds are manual |
 | Routing / ETA | **Mock** by default; Google Routes adapter written | Untested with a live key. Mappls and Ola Maps adapters **not built** |
 | Traffic | TomTom adapter written, key-gated | Untested with a live key. No key means no congestion signal. HERE not built |
 | Weather | Open-Meteo adapter written (no key) | Untested against the live API from this environment. Free for non-commercial use only |
-| Calendar and events | CSV import built; **no real dates loaded** | Synthetic rows only. Admin must load and verify real holidays and fixtures |
+| Calendar and events | CSV import built; **no dates loaded** | Admin must load and verify real holidays and fixtures; until then no event uplift is applied |
 | Map tiles | OpenStreetMap raster tiles | Demo only; not for production traffic |
 | Alerts | In-app, derived on read | No email, SMS or push |
 | Analytics | Built (occupancy by hour, reservations, pricing) | Gross figures include test payments |
-| Admin and demo mode | Built (approvals, audit, health, simulate busy Saturday / IPL night) | Not exercised signed-in |
+| Admin | Built (approvals, audit, health, CSV import). Demo mode removed | Not exercised signed-in |
 | PWA | Manifest, icons, shell-only service worker | Prices and availability are never cached |
 | CI | Typecheck, lint, tests, backtest, build, Playwright, Python tests, DB tests | Scheduled jobs workflow needs repo secrets |
 | Privacy (DPDP) | **Not implemented beyond schema** | `consents` table exists; no consent capture, retention job or deletion flow |
@@ -32,7 +32,7 @@ Everything below is as of the end of milestone 12. "Tested" means unit tests, DB
 
 | Item | Needed for | Required now? |
 |---|---|---|
-| `SUPABASE_SERVICE_ROLE_KEY` (Vercel env) | Saved quotes, reservations, feeds, crons, admin import, demo mode | **Yes** for anything beyond browsing |
+| `SUPABASE_SERVICE_ROLE_KEY` (Vercel env) | Saved quotes, reservations, feeds, crons, admin import | **Yes** for anything beyond browsing |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Vercel env) | Everything | **Yes** |
 | `CRON_SECRET` (Vercel env and GitHub secret) plus `APP_URL` (GitHub secret) | Hourly forecast, ingestion and hold expiry | Yes for live forecasts |
 | `FEED_ENCRYPTION_KEY` | Operator webhook secrets | Before onboarding an operator |
@@ -46,7 +46,8 @@ Everything below is as of the end of milestone 12. "Tested" means unit tests, DB
 ## Known limitations
 
 - The driver's "arrive in" choice is not yet linked to the routing ETA; the ETA button is informational.
-- Forecasts and quotes use only synthetic history until real feeds exist; treat every number as a demo.
+- No real lots or live occupancy are loaded yet. Until a lot connects a feed, its price is its base tariff plus any fresh traffic, weather and event signals.
+- Public sources checked 19 Nov 2026: no open real-time parking occupancy API exists for Mumbai or Ahmedabad. TomTom, HERE and Parkopedia sell it (India coverage unconfirmed); ParkNav does not cover India; MCGM's open data is static and its download is blocked from here; Ahmedabad's AmdaPark has no public API.
 - In-memory rate limiting is per serverless instance and only blunts bursts.
 - Content-Security-Policy is report-only until checked against real traffic.
 - Vercel Hobby crons run once a day, so hourly jobs run from GitHub Actions.
@@ -58,7 +59,7 @@ Everything below is as of the end of milestone 12. "Tested" means unit tests, DB
 ## Two-week backlog (priority order)
 
 1. Add the Vercel and GitHub secrets above; create a platform-admin account; walk the full driver flow (sign up, search, quote, reserve, mock pay) and fix what breaks.
-2. Link arrival time to routing ETA (arrival = now + ETA, refreshed) and add a Playwright flow against a seeded preview.
+2. Link arrival time to routing ETA (arrival = now + ETA, refreshed) and add a Playwright flow against a test database.
 3. Load real calendar and event data from official sources; verify Open-Meteo licensing for commercial use or choose another weather source.
 4. Pilot one real mall or hospital: signed webhook or CSV feed, one week of snapshots, then retrain and re-run the backtest on real data.
 5. Build the Mappls adapter against their documentation, and run the Google and TomTom adapters with live keys.

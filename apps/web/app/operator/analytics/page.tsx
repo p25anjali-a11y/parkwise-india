@@ -20,7 +20,6 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const profile = hourlyProfile(snaps.data ?? []);
   const rs = reservationSummary(res.data ?? []);
   const ps = pricingSummary((quotes.data ?? []).map((q) => ({ multiplier: Number(q.multiplier) })));
-  const isSynthetic = (snaps.data ?? []).length > 0;
   return (
     <main style={{ maxWidth: 820, margin: "0 auto", padding: 24 }}>
       <p><Link href="/operator">← Your lots</Link></p>
@@ -35,7 +34,6 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
           </g>
         ))}
       </svg>
-      {isSynthetic && <p style={{ fontSize: 13, color: "#555" }}>Demo lots show synthetic history. Real feeds replace it as they connect.</p>}
       <h2>Reservations (last 30 days)</h2>
       <p>{rs.reservations} total · {rs.confirmed} confirmed · {rs.cancelledOrExpired} cancelled or expired · conversion {rs.conversionPct ?? "n/a"}{rs.conversionPct != null ? "%" : ""}</p>
       <p>Gross paid: ₹{(rs.grossPaise / 100).toFixed(0)} <span style={{ fontSize: 13, color: "#555" }}>(before refunds and platform fees; test payments included)</span></p>
