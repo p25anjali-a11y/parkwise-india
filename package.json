@@ -10,11 +10,14 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
     "test": "vitest run",
+    "e2e": "playwright test",
     "backtest": "pnpm --filter @parkwise/forecast backtest",
-    "build": "pnpm --filter @parkwise/web build"
+    "build": "pnpm --filter @parkwise/web build",
+    "db:test": "packages/db/scripts/test.sh"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
     "eslint": "^9.0.0",
     "tsx": "^4.19.0",

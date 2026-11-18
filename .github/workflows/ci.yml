@@ -26,3 +26,45 @@ jobs:
       - name: Forecast backtest (fails on regression)
         run: pnpm backtest
       - run: pnpm build
+      - name: Python forecast stub tests
+        run: cd services/forecast && python3 -m unittest -q
+
+  e2e:
+    # Playwright against the production build with no Supabase env, so it covers the unconfigured and unauthenticated paths.
+    # Flows that need the database run against a deployed preview (see e2e.yml).
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - run: pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+
+  db:
+    # Applies migrations + seed to a real PostGIS database and runs RLS/guard assertions.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migrations and RLS tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: packages/db/scripts/test.sh
