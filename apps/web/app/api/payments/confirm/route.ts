@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { configuredOr503 } from "../../../../lib/env";
+import { limited } from "../../../../lib/rate-limit";
 import { z } from "zod";
 import { selectPaymentProvider } from "@parkwise/providers";
 import { supabaseAdmin } from "../../../../lib/supabase/admin";
@@ -7,6 +9,10 @@ import { supabaseServer } from "../../../../lib/supabase/server";
 const body = z.object({ reservationId: z.string().uuid(), orderId: z.string().min(5), paymentId: z.string().min(5), signature: z.string().min(10), method: z.string().max(20).optional() });
 
 export async function POST(req: Request) {
+  const unconfigured = configuredOr503();
+  if (unconfigured) return unconfigured;
+  const tooMany = limited(req, "payconfirm", 20);
+  if (tooMany) return tooMany;
   const p = body.safeParse(await req.json().catch(() => null));
   if (!p.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const sb = await supabaseServer();

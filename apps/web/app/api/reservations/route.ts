@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { configuredOr503 } from "../../../lib/env";
+import { limited } from "../../../lib/rate-limit";
 import { z } from "zod";
 import { selectPaymentProvider } from "@parkwise/providers";
 import { mapReservationError } from "../../../lib/reservation-errors";
@@ -9,6 +11,10 @@ const body = z.object({ quoteId: z.string().uuid() });
 
 /** Creates a 15-minute hold from a saved price quote, then opens a payment order for the locked total. */
 export async function POST(req: Request) {
+  const unconfigured = configuredOr503();
+  if (unconfigured) return unconfigured;
+  const tooMany = limited(req, "reserve", 10);
+  if (tooMany) return tooMany;
   const p = body.safeParse(await req.json().catch(() => null));
   if (!p.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const sb = await supabaseServer();

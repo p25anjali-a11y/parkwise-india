@@ -2,6 +2,7 @@ import { feedHealth } from "@parkwise/providers";
 import { hasSupabaseEnv } from "../../lib/env";
 import { supabaseServer } from "../../lib/supabase/server";
 import { setLotStatus } from "./actions";
+import { DemoControls } from "./DemoControls";
 import { ImportForm } from "./ImportForm";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +57,8 @@ export default async function Admin() {
           ))}
         </tbody>
       </table>
+      <h2>Demo mode</h2>
+      <DemoControls />
       <h2>Import calendar or events</h2>
       <ImportForm />
       <h2>Recent admin actions</h2>

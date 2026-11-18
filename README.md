@@ -6,15 +6,9 @@ Launch cities: **Mumbai and Ahmedabad** (the strategy brief assumed Bengaluru; t
 
 ## Status
 
-| Milestone | State |
-|---|---|
-| 1 Repo, CI, hello-world app | Done locally; not yet pushed or deployed |
-| 6 Pricing engine + tests | Done (38 tests) |
-| 7 Forecast baseline + backtest gate | Done on synthetic data (17 tests) |
-| 2 Schema, seed, auth | Next |
-| 3, 4, 5, 8 to 12 | Not started |
+Milestones 1 to 12 are built. See [docs/STATUS.md](docs/STATUS.md) for the honest table of what is real, what is mocked, the keys still needed, known limitations and the two-week backlog.
 
-Everything runs on **synthetic data and mocks** today. No real provider is integrated.
+Everything runs on **synthetic data and mocks** today. No real provider has been run with a live key, no operator is connected, and no real money has moved.
 
 ## Local setup
 
@@ -24,17 +18,19 @@ pnpm install
 pnpm typecheck && pnpm lint && pnpm test
 pnpm backtest          # forecast backtest on synthetic data; exits 1 on regression
 pnpm --filter @parkwise/web dev
+pnpm e2e               # Playwright; set E2E_CHANNEL=chrome to use a system Chrome
+pnpm db:test           # applies migrations to a scratch Postgres and runs the SQL assertions
 ```
 
 Copy `.env.example` to `.env.local` when keys become relevant. Missing keys will fall back to labelled mocks.
 
 ## Layout
 
-`apps/web` Next.js app · `packages/pricing` · `packages/forecast` · `packages/db`, `ingestion`, `providers` (placeholders) · `services/forecast` (Python stub, planned) · `docs/`
+`apps/web` Next.js app · `packages/pricing` · `packages/forecast` · `packages/db` (migrations and SQL tests), `ingestion`, `providers` · `services/forecast` (Python stub) · `e2e` (Playwright) · `docs/`
 
 ## Vercel cron limits
 
-Hobby accepts cron schedules at most once per day, with timing only guaranteed within the hour; more frequent expressions fail the deploy. The 2 to 5 minute traffic poller therefore needs a **Pro plan**, or an external trigger (for example a GitHub Actions schedule or Inngest) calling the cron route. `vercel.json` currently sets only the Mumbai region (`bom1`); schedules are added with the ingestion slice.
+Hobby accepts cron schedules at most once per day, with timing only guaranteed within the hour; more frequent expressions fail the deploy. The 2 to 5 minute traffic poller therefore needs a **Pro plan**, or an external trigger (for example a GitHub Actions schedule or Inngest) calling the cron route. `vercel.json` currently sets only the Mumbai region (`bom1`); hourly jobs (ingestion, forecasts, hold expiry) run from `.github/workflows/forecast-cron.yml` instead.
 
 ## Branching and protection (guidance)
 
@@ -42,4 +38,4 @@ Work on `develop`, PR into `main` using Conventional Commits. Suggested protecti
 
 ## Privacy (not legal advice)
 
-Design aims at India's DPDP Act 2023: consent before using location, vehicle numbers stored only as keyed hashes, minimal personal data, documented retention, deletion on request. Not yet implemented.
+Design aims at India's DPDP Act 2023: consent before using location, vehicle numbers stored only as keyed hashes, minimal personal data, documented retention, deletion on request. Only the schema exists (`consents`); capture, retention and deletion flows are not implemented.
