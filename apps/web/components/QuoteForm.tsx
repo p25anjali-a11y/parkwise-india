@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
+import { ReserveFlow } from "./ReserveFlow";
 import { AvailabilityAtArrival } from "./AvailabilityAtArrival";
 
-type Q = { total: number; ratePerHour: number; label: string; multiplier: number; overstayRatePerHour: number; breakdown: { label: string; multiplier: number }[]; occupancySource: string };
+type Q = { quoteId: string | null; total: number; ratePerHour: number; label: string; multiplier: number; overstayRatePerHour: number; breakdown: { label: string; multiplier: number }[]; occupancySource: string };
 
 export function QuoteForm({ lotId }: { lotId: string }) {
   const [arrive, setArrive] = useState(0);
@@ -27,6 +28,7 @@ export function QuoteForm({ lotId }: { lotId: string }) {
           <p><strong>₹{(q.total / 100).toFixed(0)}</strong> total (₹{(q.ratePerHour / 100).toFixed(0)}/hr, {q.label}). Overstay: ₹{(q.overstayRatePerHour / 100).toFixed(0)}/hr.</p>
           <ol>{q.breakdown.map((s, i) => <li key={i}>{s.label}: {s.multiplier.toFixed(2)}x</li>)}</ol>
           <p style={{ fontSize: 13, color: "#555" }}>Based on the {q.occupancySource}.</p>
+          {q.quoteId ? <ReserveFlow key={q.quoteId} quoteId={q.quoteId} /> : <p style={{ fontSize: 13 }}>Reservations are not enabled on this deployment yet.</p>}
         </div>
       )}
       {err && <p role="alert">{err}</p>}

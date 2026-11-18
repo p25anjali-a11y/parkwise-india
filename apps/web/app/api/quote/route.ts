@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 
   const arrival = new Date(Date.now() + arrivalInMin * 60_000);
   const [{ data: zone }, { data: live }, { data: rr }, { data: events }, { data: sig }, { data: fc }] = await Promise.all([
-    sb.from("zones").select("id").eq("lot_id", lotId).limit(1).maybeSingle(),
+    sb.from("zones").select("id,slot_types!inner(code)").eq("lot_id", lotId).eq("slot_types.code", "car").limit(1).maybeSingle(),
     sb.from("lot_live_state").select("occupied,capacity").eq("lot_id", lotId).maybeSingle(),
     sb.from("price_rules").select("rules").eq("lot_id", lotId).eq("active", true).is("zone_id", null).maybeSingle(),
     sb.from("events").select("starts_at,ends_at,impact").eq("lot_id", lotId),
@@ -50,6 +50,7 @@ export async function GET(req: Request) {
 
   // Persist what was shown, when the server has a service-role key. Never blocks the response.
   let saved = false;
+  let quoteId: string | null = null;
   const admin = supabaseAdmin();
   if (admin) {
     const { data: { user } } = await sb.auth.getUser();
@@ -57,8 +58,9 @@ export async function GET(req: Request) {
       user_id: user?.id ?? null, lot_id: lotId, zone_id: zone.id, arrival_at: arrival.toISOString(), duration_min: durationMin,
       predicted_occupancy: result.predictedOccupancy, multiplier: result.multiplier, rate_per_hour_paise: result.ratePerHour,
       total_paise: result.total, breakdown: result.breakdown, model_version: modelVersion,
-    });
+    }).select("id").single();
     saved = !ins.error;
+    quoteId = ins.data?.id ?? null;
   }
-  return NextResponse.json({ ...result, occupancySource: fcRow ? `forecast for your arrival time (${fcRow.model_version}, trained on synthetic demo data)` : "current count (no forecast for this time yet)", saved });
+  return NextResponse.json({ ...result, quoteId, occupancySource: fcRow ? `forecast for your arrival time (${fcRow.model_version}, trained on synthetic demo data)` : "current count (no forecast for this time yet)", saved });
 }

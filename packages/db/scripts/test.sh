@@ -38,9 +38,11 @@ for f in "$HERE"/migrations/*.sql; do
   prep "$f" | "${PSQL[@]}"
 done
 OUT="$WORK/assert.log"
-if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$HERE/tests/10_assertions.sql" >"$OUT" 2>&1; then
-  grep -E "PASS|ALL DB" "$OUT"
-else
-  grep -E "PASS|FAIL|ERROR|CONTEXT" "$OUT" || cat "$OUT"
-  exit 1
-fi
+for t in 10_assertions 20_reservations; do
+  if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$HERE/tests/$t.sql" >"$OUT" 2>&1; then
+    grep -E "PASS|ALL DB" "$OUT"
+  else
+    grep -E "PASS|FAIL|ERROR|CONTEXT" "$OUT" || cat "$OUT"
+    exit 1
+  fi
+done

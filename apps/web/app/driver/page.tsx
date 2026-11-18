@@ -12,6 +12,7 @@ export default async function Page() {
     <main style={{ padding: 24 }}>
       <h1>Driver area</h1>
       <p>Signed in as {user?.email} (role: {profile?.role ?? "unknown"}).</p>
+      <p><a href="/driver/reservations">My reservations</a> · <a href="/search">Find parking</a></p>
       <form action="/auth/signout" method="post"><button type="submit">Sign out</button></form>
     </main>
   );
