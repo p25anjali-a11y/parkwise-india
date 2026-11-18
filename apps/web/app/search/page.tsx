@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { quote, DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
-import { chooseOccupancy } from "../../lib/occupancy-input";
+import { resolveOccupancy } from "../../lib/resolve-occupancy";
+import { liveTrafficRows, liveWeatherRows, rainProbAt } from "../../lib/live-signals";
+import { signalsFor } from "../../lib/quote-inputs";
 import { LotMap } from "../../components/LotMap";
 import { hasSupabaseEnv } from "../../lib/env";
 import { availabilityNow, CITY_CENTRES, sortByDistance } from "../../lib/geo";
@@ -15,7 +17,7 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
   if (!hasSupabaseEnv()) return <main style={{ padding: 24 }}>Supabase is not configured for this deployment.</main>;
 
   const sb = await supabaseServer();
-  const { data: lots } = await sb.from("lots").select("id,name,city,category,lat,lng").eq("city", city).eq("status", "approved");
+  const { data: lots } = await sb.from("lots").select("id,name,city,category,lat,lng,is_synthetic").eq("city", city).eq("status", "approved");
   const ids = (lots ?? []).map((l) => l.id);
   const { data: live } = await sb.from("lot_live_state").select("lot_id,occupied,capacity,updated_at,source,is_synthetic").in("lot_id", ids);
   const { data: rules } = await sb.from("price_rules").select("lot_id,rules").in("lot_id", ids).eq("active", true).is("zone_id", null);
@@ -23,12 +25,16 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
   const rulesBy = new Map((rules ?? []).map((r) => [r.lot_id, { ...DEFAULT_RULES, ...(r.rules as Partial<PricingRules>) } as PricingRules]));
   const now = new Date();
 
-  const rows = sortByDistance(lots ?? [], centre).map((l) => {
+  const wx = await liveWeatherRows(city, now);
+  const rows = await Promise.all(sortByDistance(lots ?? [], centre).map(async (l) => {
     const s = liveBy.get(l.id);
-    const occ = chooseOccupancy({ forecast: null, live: s ?? null, arrival: now, now });
-    const q = quote({ lotId: l.id, zoneId: "now", rules: rulesBy.get(l.id) ?? DEFAULT_RULES, predictedOccupancy: occ.value, arrivalTime: now, durationMin: 60, inputs: [occ.input] });
-    return { ...l, label: occ.value !== null && s ? availabilityNow(s.occupied, s.capacity) : "No live availability", rate: q.ratePerHour, live: occ.value !== null };
-  });
+    const rows = [...wx, ...(await liveTrafficRows({ lat: l.lat, lng: l.lng }, now))];
+    const occ = resolveOccupancy({ lot: l, forecast: null, live: s ?? null, arrival: now, now, rainProb: rainProbAt(rows, now) });
+    const { signals, inputs } = signalsFor(rows, now, now);
+    const q = quote({ lotId: l.id, zoneId: "now", rules: rulesBy.get(l.id) ?? DEFAULT_RULES, predictedOccupancy: occ.value, arrivalTime: now, durationMin: 60, signals, inputs: [occ.input, ...inputs] });
+    const label = occ.value === null ? "No live availability" : availabilityNow(Math.round(occ.value * 100), 100);
+    return { ...l, label, rate: q.ratePerHour, live: occ.value !== null, simulated: occ.simulated };
+  }));
 
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
@@ -40,13 +46,13 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
       </nav>
       <LotMap centre={centre} lots={rows.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, label: r.label }))} />
       <p style={{ fontSize: 13, color: "#555" }}>
-        Availability and price are for right now. A lot shows live availability only when its occupancy count is under 30 minutes old; otherwise you see its base tariff and "No live availability".
+        Availability and price are for right now. Weather and traffic are live. Lots marked SIMULATED have invented parking data for demonstration; all other lots show live availability only when their count is under 30 minutes old, otherwise their base tariff and "No live availability".
       </p>
       <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
         {rows.map((r) => (
           <li key={r.id} data-testid="result" style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
             <Link href={`/lots/${r.id}`}><strong>{r.name}</strong></Link> · {r.category} · {r.km.toFixed(1)} km from centre
-            <div>{r.label} · ₹{(r.rate / 100).toFixed(0)}/hr now{r.live ? "" : " (base tariff, no fresh live data)"}</div>
+            <div>{r.label} · ₹{(r.rate / 100).toFixed(0)}/hr now{r.simulated ? " · SIMULATED lot data" : r.live ? "" : " (base tariff, no fresh live data)"}</div>
           </li>
         ))}
       </ul>

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type A = { available: false; reason: string } | { available: true; label: string; freeBays: { likely: number; pessimistic: number; optimistic: number }; pFull: number; stale: boolean; coldStart: boolean; modelVersion: string };
+type A = { available: false; reason: string } | { available: true; label: string; freeBays: { likely: number; pessimistic: number; optimistic: number }; pFull: number; stale: boolean; coldStart: boolean; modelVersion: string; simulated?: boolean };
 
 export function AvailabilityAtArrival({ lotId, arrivalInMin }: { lotId: string; arrivalInMin: number }) {
   const [a, setA] = useState<A | null>(null);
@@ -18,7 +18,7 @@ export function AvailabilityAtArrival({ lotId, arrivalInMin }: { lotId: string; 
     <p data-testid="availability">
       <strong>{a.label}</strong> when you arrive: about {a.freeBays.likely} bays free (range {a.freeBays.pessimistic}–{a.freeBays.optimistic}).
       {a.stale ? " Live count is stale, so this is less certain." : ""}{a.coldStart ? " New lot: limited history." : ""}
-      <span style={{ display: "block", fontSize: 13, color: "#555" }}>Forecast, not a guarantee. Model {a.modelVersion}, built from this lot's own recorded occupancy.</span>
+      <span style={{ display: "block", fontSize: 13, color: "#555" }}>{a.simulated ? "SIMULATED data for demonstration, not a real forecast." : `Forecast, not a guarantee. Model ${a.modelVersion}, built from this lot's own recorded occupancy.`}</span>
     </p>
   );
 }

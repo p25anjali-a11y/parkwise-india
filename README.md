@@ -8,7 +8,7 @@ Launch cities: **Mumbai and Ahmedabad** (the strategy brief assumed Bengaluru; t
 
 Milestones 1 to 12 are built. See [docs/STATUS.md](docs/STATUS.md) for the honest table of what is real, what is mocked, the keys still needed, known limitations and the two-week backlog.
 
-The app uses **real data only**: no lots are loaded until an operator or partner adds them, and stale or missing inputs are never guessed. Payments and routing are labelled mocks until keys are added; no real provider has been run with a live key and no real money has moved.
+Weather and traffic are live and real. Parking lots are real when an operator or partner adds them; an optional, clearly labelled **simulated** lot set can be loaded for demos (see `docs/DATA_SOURCES.md`). Stale or missing real inputs are never guessed. Payments and routing are labelled mocks until keys are added; no real provider has been run with a live key and no real money has moved.
 
 ## Local setup
 
