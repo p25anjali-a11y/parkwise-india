@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: 24 }}>
       <h1>Parkwise India</h1>
-      <p>Hello from the monorepo. Driver and operator apps are coming in the next slices.</p>
+      <p><a href="/search">Find parking in Mumbai or Ahmedabad</a> · <a href="/login">Sign in</a></p>
       <p>
         Pricing package check (demo data, not a real lot): at 72% predicted occupancy, 2 hours costs ₹{(q.total / 100).toFixed(0)} ({q.multiplier}x).
       </p>
