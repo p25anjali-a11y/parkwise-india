@@ -18,8 +18,10 @@ Nothing below is integrated yet. Rows describe the plan and what still has to be
 | Events | Demand spikes | Manual entry first; scrape only where robots.txt and ToS allow | Daily | None | Do not scrape BookMyShow, District or similar if they forbid it | Not built |
 | Municipal smart-parking feeds (NDMC, ParkHyderabad, Chennai, Gurugram, BMC, Ahmedabad) | Context, possible partners | Research | n/a | n/a | Do not scrape official apps | Research pending |
 
-## Real data only
-The app never loads or shows synthetic data. The demo seed now lives in `packages/db/tests/fixtures/` and is loaded only by `pnpm db:test`; a database trigger refuses synthetic lots elsewhere. `packages/forecast/src/synthetic.ts` is a test fixture and is not exported.
+## Real signals, simulated lots (optional demo)
+Weather and traffic are always live and real. Parking lots and their occupancy are real when an operator supplies them. For demos there is one explicit, labelled exception: `packages/db/seed/simulated_lots.sql` adds 12 lots named "[SIMULATED] ..." (flagged `is_synthetic`). Their occupancy is never stored; the app computes it on read from the real clock, live rain probability and real event windows (`apps/web/lib/simulated-occupancy.ts`), and every page and saved quote says SIMULATED. Real lots can never fall back to a simulation, forecasts are never trained on it, and `seed/remove_simulated_lots.sql` hides it again. The rest of this section describes real lots.
+
+The app never loads synthetic data otherwise. The demo seed now lives in `packages/db/tests/fixtures/` and is loaded only by `pnpm db:test`; a database trigger refuses synthetic lots elsewhere. `packages/forecast/src/synthetic.ts` is a test fixture and is not exported.
 
 ### Freshness limits (packages/pricing/src/freshness.ts)
 | Input | Max age | Real source |
