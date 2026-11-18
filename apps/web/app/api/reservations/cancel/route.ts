@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { configuredOr503 } from "../../../../lib/env";
 import { z } from "zod";
 import { supabaseAdmin } from "../../../../lib/supabase/admin";
 import { supabaseServer } from "../../../../lib/supabase/server";
 
 export async function POST(req: Request) {
+  const unconfigured = configuredOr503();
+  if (unconfigured) return unconfigured;
   const p = z.object({ reservationId: z.string().uuid() }).safeParse(await req.json().catch(() => null));
   if (!p.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const sb = await supabaseServer();

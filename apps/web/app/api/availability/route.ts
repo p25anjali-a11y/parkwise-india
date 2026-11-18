@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { configuredOr503 } from "../../../lib/env";
+import { limited } from "../../../lib/rate-limit";
 import { z } from "zod";
 import { describeForecast, nearestForecast } from "../../../lib/availability";
 import { supabaseServer } from "../../../lib/supabase/server";
@@ -6,6 +8,10 @@ import { supabaseServer } from "../../../lib/supabase/server";
 const q = z.object({ lotId: z.string().uuid(), arrivalInMin: z.coerce.number().int().min(0).max(24 * 60).default(0) });
 
 export async function GET(req: Request) {
+  const unconfigured = configuredOr503();
+  if (unconfigured) return unconfigured;
+  const tooMany = limited(req, "avail", 60);
+  if (tooMany) return tooMany;
   const p = q.safeParse(Object.fromEntries(new URL(req.url).searchParams));
   if (!p.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const sb = await supabaseServer();

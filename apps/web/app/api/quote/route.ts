@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { configuredOr503 } from "../../../lib/env";
+import { limited } from "../../../lib/rate-limit";
 import { z } from "zod";
 import { DEFAULT_RULES, quote, type PricingRules } from "@parkwise/pricing";
 import { nearestForecast } from "../../../lib/availability";
@@ -13,6 +15,10 @@ const q = z.object({
 });
 
 export async function GET(req: Request) {
+  const unconfigured = configuredOr503();
+  if (unconfigured) return unconfigured;
+  const tooMany = limited(req, "quote", 30);
+  if (tooMany) return tooMany;
   const p = q.safeParse(Object.fromEntries(new URL(req.url).searchParams));
   if (!p.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const { lotId, arrivalInMin, durationMin } = p.data;

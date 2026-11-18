@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { configuredOr503 } from "../../../../lib/env";
 import { parseCalendarCsv, parseEventsCsv } from "@parkwise/providers";
 import { supabaseAdmin } from "../../../../lib/supabase/admin";
 import { supabaseServer } from "../../../../lib/supabase/server";
 
 /** Platform admins import calendar days or events from CSV. Dates must be checked against an official source by the admin. */
 export async function POST(req: Request) {
+  const unconfigured = configuredOr503();
+  if (unconfigured) return unconfigured;
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return NextResponse.json({ error: "sign in" }, { status: 401 });

@@ -23,3 +23,8 @@ export function hasSupabaseEnv(): boolean {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   }).success;
 }
+
+/** For API routes: a clear 503 instead of a thrown 500 when Supabase env is missing (e.g. an unconfigured preview). */
+export function configuredOr503(): Response | null {
+  return hasSupabaseEnv() ? null : new Response(JSON.stringify({ error: "backend not configured" }), { status: 503, headers: { "Content-Type": "application/json" } });
+}
