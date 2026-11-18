@@ -4,7 +4,8 @@ import { limited } from "../../../lib/rate-limit";
 import { z } from "zod";
 import { DEFAULT_RULES, quote, type PricingRules } from "@parkwise/pricing";
 import { nearestForecast } from "../../../lib/availability";
-import { chooseOccupancy } from "../../../lib/occupancy-input";
+import { resolveOccupancy } from "../../../lib/resolve-occupancy";
+import { liveTrafficRows, liveWeatherRows, rainProbAt } from "../../../lib/live-signals";
 import { eventUpliftFor, signalsFor, withEventUplift } from "../../../lib/quote-inputs";
 import { supabaseAdmin } from "../../../lib/supabase/admin";
 import { supabaseServer } from "../../../lib/supabase/server";
@@ -24,7 +25,7 @@ export async function GET(req: Request) {
   if (!p.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const { lotId, arrivalInMin, durationMin } = p.data;
   const sb = await supabaseServer();
-  const { data: lot } = await sb.from("lots").select("id,city").eq("id", lotId).eq("status", "approved").maybeSingle();
+  const { data: lot } = await sb.from("lots").select("id,city,category,lat,lng,is_synthetic").eq("id", lotId).eq("status", "approved").maybeSingle();
   if (!lot) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   const arrival = new Date(Date.now() + arrivalInMin * 60_000);
@@ -43,9 +44,15 @@ export async function GET(req: Request) {
   const upliftedRules = withEventUplift(rules, eventUpliftFor(events ?? [], arrival, durationMin));
   // Real data only. Forecasts are built from real snapshots; a live count must be fresh; otherwise no occupancy is used.
   const fcRow = nearestForecast((fc ?? []).map((r) => ({ ...r, p_full: Number(r.p_full) })), arrival);
-  const occ = chooseOccupancy({ forecast: fcRow, live: live ?? null, arrival });
-  const { signals, inputs: signalInputs } = signalsFor(sig ?? [], arrival);
+  // Weather and traffic are LIVE for every lot (simulated or real). Stored rows from the hourly job are merged in.
+  const [wx, tr] = await Promise.all([liveWeatherRows(lot.city), liveTrafficRows({ lat: lot.lat, lng: lot.lng })]);
+  const signalRows = [...wx, ...tr, ...(sig ?? [])];
   const eventUplift = eventUpliftFor(events ?? [], arrival, durationMin);
+  const occ = resolveOccupancy({
+    lot, forecast: fcRow, live: live ?? null, arrival,
+    rainProb: rainProbAt(signalRows, arrival), eventImpact: eventUplift / 0.25,
+  });
+  const { signals, inputs: signalInputs } = signalsFor(signalRows, arrival);
   const inputs = [occ.input, ...signalInputs, { name: "events" as const, status: eventUplift > 0 ? ("used" as const) : ("missing" as const), source: "operator / imported events" }];
   const modelVersion = occ.modelVersion;
   const result = quote({
@@ -73,5 +80,5 @@ export async function GET(req: Request) {
     saved = !ins.error;
     quoteId = ins.data?.id ?? null;
   }
-  return NextResponse.json({ ...result, quoteId, occupancySource: occ.input.status === "used" ? occ.input.source : "none: no fresh occupancy data, base tariff", inputs, saved });
+  return NextResponse.json({ ...result, quoteId, occupancySource: occ.input.status === "used" ? occ.input.source : "none: no fresh occupancy data, base tariff", simulated: occ.simulated, inputs, saved });
 }
