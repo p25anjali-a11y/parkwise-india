@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     sb.from("lot_live_state").select("occupied,capacity").eq("lot_id", lotId).maybeSingle(),
     sb.from("price_rules").select("rules").eq("lot_id", lotId).eq("active", true).is("zone_id", null).maybeSingle(),
     sb.from("events").select("starts_at,ends_at,impact").eq("lot_id", lotId),
-    sb.from("demand_signals").select("kind,value,valid_at").eq("city", lot.city),
+    sb.from("demand_signals").select("kind,value,valid_at").eq("city", lot.city).or(`lot_id.is.null,lot_id.eq.${lotId}`),
     sb.from("forecasts").select("target_time,p10,p50,p90,p_full,model_version,stale,cold_start").eq("lot_id", lotId)
       .gte("target_time", new Date(arrival.getTime() - 20 * 60_000).toISOString()).lte("target_time", new Date(arrival.getTime() + 20 * 60_000).toISOString()),
   ]);

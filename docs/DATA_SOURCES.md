@@ -11,9 +11,9 @@ Nothing below is integrated yet. Rows describe the plan and what still has to be
 | Mappls | Predictive ETA, walking distance | API | Per request, cached 5-min buckets | Free tier then paid; verify | Verify storage terms before keeping responses beyond cache window | Not built |
 | Ola Maps | Traffic-aware ETA, two-wheeler | API | Per request | Free tier limits have changed over time; verify current | Verify | Not built |
 | Google Distance Matrix | Optional routing | API | Per request | Paid | Verify | Adapter built (Routes API), unit-tested with fake fetch, not run with a live key |
-| HERE or TomTom traffic | Congestion near each lot | API | 2 to 5 min | Free tier then paid; verify | Verify | Not built |
+| HERE or TomTom traffic | Congestion near each lot | API | 2 to 5 min | Free tier then paid; verify | Verify | TomTom adapter built (Flow Segment Data), unit-tested with fake fetch, not run with a live key. HERE not built. No key means no congestion signal (nothing invented) |
 | TomTom Parking Availability | Third-party availability | API | About 10 min | Paid | Enable only if the market-coverage endpoint lists India | Not built |
-| Open-Meteo | Rain forecast | API, no key | Hourly | Free (non-commercial terms; check commercial use) | Verify | Not built |
+| Open-Meteo | Rain forecast | API, no key | Hourly | Free for non-commercial use only; commercial launch needs a paid plan or another provider | Verify | Adapter built (hourly precipitation probability), unit-tested with fake fetch; not yet run against the live API from this environment |
 | India calendar, festivals, IPL dates | Day-type effects | Manual admin table | As edited | None | n/a | Not built |
 | Events | Demand spikes | Manual entry first; scrape only where robots.txt and ToS allow | Daily | None | Do not scrape BookMyShow, District or similar if they forbid it | Not built |
 | Municipal smart-parking feeds (NDMC, ParkHyderabad, Chennai, Gurugram, BMC, Ahmedabad) | Context, possible partners | Research | n/a | n/a | Do not scrape official apps | Research pending |

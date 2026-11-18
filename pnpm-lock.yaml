@@ -35,6 +35,9 @@ importers:
       '@parkwise/forecast':
         specifier: workspace:*
         version: link:../../packages/forecast
+      '@parkwise/ingestion':
+        specifier: workspace:*
+        version: link:../../packages/ingestion
       '@parkwise/pricing':
         specifier: workspace:*
         version: link:../../packages/pricing
@@ -77,7 +80,11 @@ importers:
 
   packages/forecast: {}
 
-  packages/ingestion: {}
+  packages/ingestion:
+    dependencies:
+      '@parkwise/providers':
+        specifier: workspace:*
+        version: link:../providers
 
   packages/pricing: {}
 
