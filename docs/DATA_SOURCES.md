@@ -4,9 +4,9 @@ Nothing below is integrated yet. Rows describe the plan and what still has to be
 
 | Source | Purpose | Method | Refresh | Cost | ToS status | Real or mock |
 |---|---|---|---|---|---|---|
-| Operator webhook (HMAC) | Entry and exit events | Partner / first-party | Real time | None | Contract with operator | Not built |
-| CSV upload | Lots with no tech | First-party | Manual | None | n/a | Not built |
-| FASTag (NETC) | Entry and exit via tag reads | Partner (acquirer or operator) | Real time | Commercial agreement | Needs agreement | Stub only, planned |
+| Operator webhook (HMAC) | Entry and exit events | Partner / first-party | Real time | None | Contract with operator | Built: signed (timestamp.body HMAC-SHA256), 5-min replay window, idempotent; DB path tested. Secrets stored AES-256-GCM encrypted. No operator is connected yet |
+| CSV upload | Lots with no tech | First-party | Manual | None | n/a | Built (absolute counts; stale snapshots do not overwrite newer live state) |
+| FASTag (NETC) | Entry and exit via tag reads | Partner (acquirer or operator) | Real time | Commercial agreement | Needs agreement | Stub only (always throws; labelled "requires partnership") |
 | Park+ / Parkr style vendors | Occupancy from vendor systems | Partner | Unknown | Unknown | **Requires partnership**; no public API assumed | Stub only, planned |
 | Mappls | Predictive ETA, walking distance | API | Per request, cached 5-min buckets | Free tier then paid; verify | Verify storage terms before keeping responses beyond cache window | Not built |
 | Ola Maps | Traffic-aware ETA, two-wheeler | API | Per request | Free tier limits have changed over time; verify current | Verify | Not built |

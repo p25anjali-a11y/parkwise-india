@@ -38,7 +38,7 @@ for f in "$HERE"/migrations/*.sql; do
   prep "$f" | "${PSQL[@]}"
 done
 OUT="$WORK/assert.log"
-for t in 10_assertions 20_reservations; do
+for t in 10_assertions 20_reservations 30_feeds; do
   if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$HERE/tests/$t.sql" >"$OUT" 2>&1; then
     grep -E "PASS|ALL DB" "$OUT"
   else
