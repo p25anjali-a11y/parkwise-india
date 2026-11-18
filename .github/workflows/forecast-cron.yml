@@ -1,4 +1,4 @@
-name: forecast-cron
+name: scheduled-jobs
 # Vercel Hobby crons run at most once a day, so an hourly refresh is triggered from here.
 # Needs repo secrets APP_URL (e.g. https://parkwise-india.vercel.app) and CRON_SECRET; skips cleanly when unset.
 on:
@@ -15,5 +15,6 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET not set; skipping"; exit 0; fi
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/ingest"
           curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/forecast"
           curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/expire-holds"
