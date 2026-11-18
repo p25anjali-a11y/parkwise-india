@@ -1,0 +1,4 @@
+# One row per REAL lot. data_source = where the facts came from (for example "operator export" or "AMC tariff notice"),
+# data_as_of = the date those facts were true. Rates in rupees per hour. Quote any field that contains a comma.
+# municipal_cap_inr_per_hour may be left empty. Delete these comment lines or leave them; lines starting # are ignored.
+name,city,address,category,lat,lng,car_capacity,base_rate_inr_per_hour,municipal_cap_inr_per_hour,operator,data_source,data_as_of
