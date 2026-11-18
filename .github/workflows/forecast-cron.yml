@@ -16,3 +16,4 @@ jobs:
         run: |
           if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "APP_URL or CRON_SECRET not set; skipping"; exit 0; fi
           curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/forecast"
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/expire-holds"
