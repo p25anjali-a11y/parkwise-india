@@ -18,7 +18,7 @@ export function AvailabilityAtArrival({ lotId, arrivalInMin }: { lotId: string; 
     <p data-testid="availability">
       <strong>{a.label}</strong> when you arrive: about {a.freeBays.likely} bays free (range {a.freeBays.pessimistic}–{a.freeBays.optimistic}).
       {a.stale ? " Live count is stale, so this is less certain." : ""}{a.coldStart ? " New lot: limited history." : ""}
-      <span style={{ display: "block", fontSize: 13, color: "#555" }}>Forecast, not a guarantee. Model {a.modelVersion}, trained on synthetic demo data.</span>
+      <span style={{ display: "block", fontSize: 13, color: "#555" }}>Forecast, not a guarantee. Model {a.modelVersion}, built from this lot's own recorded occupancy.</span>
     </p>
   );
 }

@@ -37,6 +37,8 @@ for f in "$HERE"/migrations/*.sql; do
   echo "applying $(basename "$f")"
   prep "$f" | "${PSQL[@]}"
 done
+echo "loading TEST FIXTURE (synthetic, test database only)"
+(echo "set app.allow_synthetic = 'on';"; prep "$HERE/tests/fixtures/test_fixture_synthetic.sql") | "${PSQL[@]}"
 OUT="$WORK/assert.log"
 for t in 10_assertions 20_reservations 30_feeds; do
   if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$HERE/tests/$t.sql" >"$OUT" 2>&1; then

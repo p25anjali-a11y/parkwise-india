@@ -8,7 +8,7 @@ Launch cities: **Mumbai and Ahmedabad** (the strategy brief assumed Bengaluru; t
 
 Milestones 1 to 12 are built. See [docs/STATUS.md](docs/STATUS.md) for the honest table of what is real, what is mocked, the keys still needed, known limitations and the two-week backlog.
 
-Everything runs on **synthetic data and mocks** today. No real provider has been run with a live key, no operator is connected, and no real money has moved.
+The app uses **real data only**: no lots are loaded until an operator or partner adds them, and stale or missing inputs are never guessed. Payments and routing are labelled mocks until keys are added; no real provider has been run with a live key and no real money has moved.
 
 ## Local setup
 
@@ -16,7 +16,7 @@ Everything runs on **synthetic data and mocks** today. No real provider has been
 corepack enable
 pnpm install
 pnpm typecheck && pnpm lint && pnpm test
-pnpm backtest          # forecast backtest on synthetic data; exits 1 on regression
+pnpm backtest          # forecast backtest on a synthetic test fixture (model regression check only); exits 1 on regression
 pnpm --filter @parkwise/web dev
 pnpm e2e               # Playwright; set E2E_CHANNEL=chrome to use a system Chrome
 pnpm db:test           # applies migrations to a scratch Postgres and runs the SQL assertions

@@ -17,13 +17,32 @@ describe("quote inputs", () => {
     ];
     expect(eventUpliftFor(ev, arrival, 60)).toBe(0.25);
   });
-  it("detects rain near arrival only", () => {
-    expect(signalsFor([{ kind: "rain_prob", value: 0.9, valid_at: "2026-11-20T19:00:00Z" }], arrival).rain).toBe(true);
-    expect(signalsFor([{ kind: "rain_prob", value: 0.9, valid_at: "2026-11-21T19:00:00Z" }], arrival).rain).toBe(false);
-    expect(signalsFor([{ kind: "rain_prob", value: 0.3, valid_at: "2026-11-20T19:00:00Z" }], arrival).rain).toBe(false);
+  const now = new Date("2026-11-20T17:30:00Z");
+  const fetched = (minAgo: number) => new Date(now.getTime() - minAgo * 60_000).toISOString();
+
+  it("uses rain only when fresh, real and near arrival", () => {
+    const row = { kind: "rain_prob", value: 0.9, valid_at: "2026-11-20T19:00:00Z", created_at: fetched(30), source: "Open-Meteo" };
+    expect(signalsFor([row], arrival, now).signals.rain).toBe(true);
+    expect(signalsFor([row], arrival, now).inputs.find((i) => i.name === "weather")?.status).toBe("used");
+    expect(signalsFor([{ ...row, valid_at: "2026-11-21T19:00:00Z" }], arrival, now).signals.rain).toBe(false);
+    expect(signalsFor([{ ...row, value: 0.3 }], arrival, now).signals.rain).toBe(false);
   });
-  it("reads congestion", () => {
-    expect(signalsFor([{ kind: "congestion", value: 0.8, valid_at: "2026-11-20T18:10:00Z" }], arrival).congestionIndex).toBe(0.8);
+  it("ignores stale weather and says so", () => {
+    const r = signalsFor([{ kind: "rain_prob", value: 0.9, valid_at: "2026-11-20T19:00:00Z", created_at: fetched(400) }], arrival, now);
+    expect(r.signals.rain).toBe(false);
+    expect(r.inputs.find((i) => i.name === "weather")?.status).toBe("stale");
+  });
+  it("never uses mock signals", () => {
+    const r = signalsFor([{ kind: "rain_prob", value: 0.9, valid_at: "2026-11-20T19:00:00Z", created_at: fetched(5), is_mock: true }], arrival, now);
+    expect(r.signals.rain).toBe(false);
+    expect(r.inputs.find((i) => i.name === "weather")?.status).toBe("missing");
+  });
+  it("reads congestion only when fresh and the arrival is soon", () => {
+    const row = { kind: "congestion", value: 0.8, valid_at: "2026-11-20T18:10:00Z", created_at: fetched(10), source: "TomTom" };
+    expect(signalsFor([row], arrival, now).signals.congestionIndex).toBe(0.8);
+    expect(signalsFor([{ ...row, created_at: fetched(90) }], arrival, now).signals.congestionIndex).toBeUndefined();
+    const farArrival = new Date("2026-11-21T18:00:00Z");
+    expect(signalsFor([{ ...row, valid_at: "2026-11-21T18:10:00Z" }], farArrival, now).signals.congestionIndex).toBeUndefined();
   });
   it("leaves rules unchanged with no uplift", () => {
     expect(withEventUplift(DEFAULT_RULES, 0)).toBe(DEFAULT_RULES);

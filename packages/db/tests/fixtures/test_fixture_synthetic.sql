@@ -1,4 +1,6 @@
--- 0003_seed_synthetic.sql: DEMO DATA ONLY. Every row below is flagged is_synthetic = true.
+set app.allow_synthetic = 'on';
+-- TEST FIXTURE ONLY (never a migration, never applied to a real database). Loaded by scripts/test.sh after the
+-- migrations so the SQL tests have lots to work with. DEMO DATA ONLY. Every row below is flagged is_synthetic = true.
 -- Lot names and coordinates point at real places for demo realism, but capacities, tariffs and all
 -- occupancy are invented. Coordinates are approximate. Never present this as real parking data.
 

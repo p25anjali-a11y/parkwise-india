@@ -2,7 +2,6 @@ import { feedHealth } from "@parkwise/providers";
 import { hasSupabaseEnv } from "../../lib/env";
 import { supabaseServer } from "../../lib/supabase/server";
 import { setLotStatus } from "./actions";
-import { DemoControls } from "./DemoControls";
 import { ImportForm } from "./ImportForm";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +10,7 @@ export default async function Admin() {
   if (!hasSupabaseEnv()) return <main style={{ padding: 24 }}>Supabase is not configured for this deployment.</main>;
   const sb = await supabaseServer();
   const [lots, health, audit] = await Promise.all([
-    sb.from("lots").select("id,name,city,status,last_feed_at,is_synthetic").order("status").order("name"),
+    sb.from("lots").select("id,name,city,status,last_feed_at").order("status").order("name"),
     sb.from("data_source_health").select("source,kind,is_mock,last_success_at,last_error_at,last_error,success_count,error_count"),
     sb.from("audit_log").select("created_at,action,entity_id,reason").order("created_at", { ascending: false }).limit(15),
   ]);
@@ -32,7 +31,7 @@ export default async function Admin() {
         <tbody>
           {(lots.data ?? []).map((l) => (
             <tr key={l.id}>
-              <td>{l.name}{l.is_synthetic ? " (synthetic)" : ""}</td>
+              <td>{l.name}</td>
               <td>{l.status}</td>
               <td>{feedHealth(l.last_feed_at ? new Date(l.last_feed_at) : null)}</td>
               <td>
@@ -57,8 +56,6 @@ export default async function Admin() {
           ))}
         </tbody>
       </table>
-      <h2>Demo mode</h2>
-      <DemoControls />
       <h2>Import calendar or events</h2>
       <ImportForm />
       <h2>Recent admin actions</h2>

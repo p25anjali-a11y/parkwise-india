@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { demoCalendar, generateLot } from "@parkwise/forecast";
+// Test-only synthetic fixture, deliberately not exported from the package.
+import { demoCalendar, generateLot } from "../../../packages/forecast/src/synthetic";
 import { flagsAt, planForecasts, type Context } from "./forecast-job";
 
 const ctx: Context = {
