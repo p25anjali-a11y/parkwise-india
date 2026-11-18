@@ -38,6 +38,9 @@ importers:
       '@parkwise/pricing':
         specifier: workspace:*
         version: link:../../packages/pricing
+      '@parkwise/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
       '@supabase/ssr':
         specifier: ^0.12.7
         version: 0.12.7(@supabase/supabase-js@2.119.0)

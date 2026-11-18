@@ -1,4 +1,4 @@
 /** @type {import('next').NextConfig} */
 export default {
-  transpilePackages: ["@parkwise/pricing", "@parkwise/forecast"],
+  transpilePackages: ["@parkwise/pricing", "@parkwise/forecast", "@parkwise/providers"],
 };

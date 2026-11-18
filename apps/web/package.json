@@ -11,6 +11,7 @@
   "dependencies": {
     "@parkwise/forecast": "workspace:*",
     "@parkwise/pricing": "workspace:*",
+    "@parkwise/providers": "workspace:*",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.0",
     "maplibre-gl": "^6.19.0",

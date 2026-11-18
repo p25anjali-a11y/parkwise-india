@@ -10,7 +10,7 @@ Nothing below is integrated yet. Rows describe the plan and what still has to be
 | Park+ / Parkr style vendors | Occupancy from vendor systems | Partner | Unknown | Unknown | **Requires partnership**; no public API assumed | Stub only, planned |
 | Mappls | Predictive ETA, walking distance | API | Per request, cached 5-min buckets | Free tier then paid; verify | Verify storage terms before keeping responses beyond cache window | Not built |
 | Ola Maps | Traffic-aware ETA, two-wheeler | API | Per request | Free tier limits have changed over time; verify current | Verify | Not built |
-| Google Distance Matrix | Optional routing | API | Per request | Paid | Verify | Not built |
+| Google Distance Matrix | Optional routing | API | Per request | Paid | Verify | Adapter built (Routes API), unit-tested with fake fetch, not run with a live key |
 | HERE or TomTom traffic | Congestion near each lot | API | 2 to 5 min | Free tier then paid; verify | Verify | Not built |
 | TomTom Parking Availability | Third-party availability | API | About 10 min | Paid | Enable only if the market-coverage endpoint lists India | Not built |
 | Open-Meteo | Rain forecast | API, no key | Hourly | Free (non-commercial terms; check commercial use) | Verify | Not built |
