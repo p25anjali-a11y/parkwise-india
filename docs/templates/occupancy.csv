@@ -1,0 +1,3 @@
+# Real occupancy counts for ONE lot: cars currently parked, at each time. ISO 8601 timestamps with offset (IST is +05:30).
+# Upload on the lot's Integrations page (CSV feed). The first count creates the lot's live state; counts above capacity are clamped.
+captured_at,occupied
