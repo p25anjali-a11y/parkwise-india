@@ -37,3 +37,8 @@ Older data counts as missing. Each quote records which inputs were used, stale o
 - Google Maps Platform: a PLENTY / SOMEWHAT_DIFFICULT / DIFFICULT rating in the Geocoding API (EEA-documented); no live occupancy.
 - MCGM open parking data v1.1: static lots, capacities and tariffs; no live occupancy; age and licence unstated. Not loaded.
 - Ahmedabad AMC / AmdaPark: availability and booking in AMC's app, no public API found.
+
+## Onboarding a real lot
+1. Fill `docs/templates/lots.csv` (name, city, address, category, coordinates, car capacity, base rate, optional municipal cap, operator, `data_source`, `data_as_of`) and import it on the admin page ("Real lots"). Every lot shows its source and date to drivers.
+2. Send occupancy: upload `docs/templates/occupancy.csv` on the lot's Integrations page, or connect the signed webhook. The first count creates the live state; until then the lot shows "No live availability" and its base tariff.
+3. Add real events and holidays on the same admin page.
