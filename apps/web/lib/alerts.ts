@@ -28,7 +28,7 @@ export function computeAlerts(rows: AlertInput[], now: Date = new Date()): Alert
   for (const r of rows) {
     const base = { lotId: r.lotId, lotName: r.lotName };
     if (!r.lastFeedAt) {
-      out.push({ ...base, kind: "no_feed", severity: "info", message: "No live feed yet. Drivers see synthetic or forecast-only data." });
+      out.push({ ...base, kind: "no_feed", severity: "info", message: "No live feed yet. Drivers see your base tariff, not live availability, until a feed connects." });
     } else {
       const ageMin = (now.getTime() - Date.parse(r.lastFeedAt)) / 60_000;
       if (ageMin > STALE_MIN) out.push({ ...base, kind: "feed_stale", severity: ageMin > 60 ? "critical" : "warning", message: `Feed last updated ${Math.round(ageMin)} min ago. Forecasts are widened until it recovers.` });

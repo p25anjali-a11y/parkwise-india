@@ -1,4 +1,4 @@
-import type { DemandSignals, PricingRules } from "@parkwise/pricing";
+import { isFresh, type DataInput, type DemandSignals, type PricingRules } from "@parkwise/pricing";
 
 /** Event uplift added to the multiplier at full impact (impact 1.0). Operator rules can override via eventUplift. */
 export const EVENT_UPLIFT_AT_FULL_IMPACT = 0.25;
@@ -25,15 +25,46 @@ export function eventUpliftFor(events: EventRow[], arrival: Date, durationMin: n
 export interface SignalRow {
   kind: string;
   value: number;
+  /** When the prediction or reading applies. */
   valid_at: string;
+  /** When we fetched it. Freshness is judged on this. */
+  created_at?: string | null;
+  /** Mock rows never count as real data. */
+  is_mock?: boolean;
+  source?: string;
 }
 
-/** Rain counts when a rain probability of 0.6 or more is valid within three hours of arrival. */
-export function signalsFor(rows: SignalRow[], arrival: Date): DemandSignals {
-  const near = rows.filter((r) => Math.abs(new Date(r.valid_at).getTime() - arrival.getTime()) <= 3 * 3600_000);
-  const rain = near.some((r) => r.kind === "rain_prob" && r.value >= 0.6);
-  const cong = near.filter((r) => r.kind === "congestion").map((r) => r.value);
-  return { rain, congestionIndex: cong.length ? Math.max(...cong) : undefined };
+/** Traffic is a live reading, so it only informs quotes for arrivals within this many minutes of now. */
+const TRAFFIC_HORIZON_MIN = 60;
+
+/**
+ * Real signals only. Mock rows are ignored. Rain counts when a probability of 0.6 or more, fetched within
+ * the weather freshness limit, is valid within three hours of arrival. Congestion counts only when read within
+ * the traffic freshness limit and the arrival is soon. Anything else is reported as missing or stale, not guessed.
+ */
+export function signalsFor(rows: SignalRow[], arrival: Date, now: Date = new Date()): { signals: DemandSignals; inputs: DataInput[] } {
+  const real = rows.filter((r) => r.is_mock !== true);
+  const near = real.filter((r) => Math.abs(new Date(r.valid_at).getTime() - arrival.getTime()) <= 3 * 3600_000);
+
+  const weather = near.filter((r) => r.kind === "rain_prob");
+  const freshWeather = weather.filter((r) => isFresh("weather", r.created_at, now));
+  const traffic = real.filter((r) => r.kind === "congestion" && Math.abs(new Date(r.valid_at).getTime() - arrival.getTime()) <= 3 * 3600_000);
+  const arrivalSoon = arrival.getTime() - now.getTime() <= TRAFFIC_HORIZON_MIN * 60_000;
+  const freshTraffic = arrivalSoon ? traffic.filter((r) => isFresh("traffic", r.created_at, now)) : [];
+
+  const newest = (rs: SignalRow[]) => rs.map((r) => r.created_at ?? "").sort().at(-1) || undefined;
+  const status = (name: DataInput["name"], all: SignalRow[], fresh: SignalRow[]): DataInput =>
+    fresh.length
+      ? { name, status: "used", source: fresh[0]!.source, asOf: newest(fresh) }
+      : { name, status: all.length ? "stale" : "missing", source: all[0]?.source, asOf: newest(all) };
+
+  return {
+    signals: {
+      rain: freshWeather.some((r) => r.value >= 0.6),
+      congestionIndex: freshTraffic.length ? Math.max(...freshTraffic.map((r) => r.value)) : undefined,
+    },
+    inputs: [status("weather", weather, freshWeather), status("traffic", traffic, freshTraffic)],
+  };
 }
 
 export function withEventUplift(rules: PricingRules, uplift: number): PricingRules {

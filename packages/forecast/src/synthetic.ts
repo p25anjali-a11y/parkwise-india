@@ -1,7 +1,7 @@
 import type { DayFlags, LotCategory, Sample } from "./types";
 import { STEP_MS, istMidnight, istParts } from "./time";
 
-/** All data produced here is SYNTHETIC. Never present it as real occupancy. */
+/** TEST FIXTURE ONLY. All data produced here is SYNTHETIC and is not exported from the package or used by the app. */
 export const SYNTHETIC = true;
 
 export interface LotSpec {

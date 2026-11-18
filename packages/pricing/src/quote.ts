@@ -39,12 +39,16 @@ export function quote(input: QuoteInput): Quote {
     m = rules.manualOverride.multiplier;
     steps.push({ kind: "override", label: `Operator override: ${rules.manualOverride.reason}`, multiplier: m });
   } else {
-    m = tierMultiplier(rules.tiers, predictedOccupancy);
-    steps.push({
-      kind: "tier",
-      label: `Predicted ${Math.round(clamp(predictedOccupancy, 0, 1) * 100)}% full at arrival`,
-      multiplier: m,
-    });
+    if (predictedOccupancy === null) {
+      steps.push({ kind: "no_data", label: "No fresh occupancy data for this lot: base tariff", multiplier: 1 });
+    } else {
+      m = tierMultiplier(rules.tiers, predictedOccupancy);
+      steps.push({
+        kind: "tier",
+        label: `${Math.round(clamp(predictedOccupancy, 0, 1) * 100)}% full at arrival`,
+        multiplier: m,
+      });
+    }
 
     let uplift = 0;
     const s = input.signals ?? {};
@@ -101,7 +105,7 @@ export function quote(input: QuoteInput): Quote {
     zoneId: input.zoneId,
     arrivalTime: input.arrivalTime.toISOString(),
     durationMin,
-    predictedOccupancy: clamp(predictedOccupancy, 0, 1),
+    predictedOccupancy: predictedOccupancy === null ? null : clamp(predictedOccupancy, 0, 1),
     multiplier: m,
     ratePerHour: rate,
     baseRatePerHour: rules.baseRatePerHour,
@@ -109,6 +113,7 @@ export function quote(input: QuoteInput): Quote {
     breakdown: steps,
     label: m < 1 ? "off-peak" : m === 1 ? "standard" : "peak",
     overstayRatePerHour: Math.round(rate * rules.overstayMultiplier),
+    inputs: input.inputs ?? [],
   };
 }
 

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function LotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const sb = await supabaseServer();
-  const { data: lot } = await sb.from("lots").select("id,name,city,address,category,status,is_synthetic").eq("id", id).maybeSingle();
+  const { data: lot } = await sb.from("lots").select("id,name,city,address,category,status").eq("id", id).maybeSingle();
   if (!lot) notFound();
   const { data: zones } = await sb.from("zones").select("id,name,capacity,reservable_pct,reserved_count").eq("lot_id", id);
   const { data: rr } = await sb.from("price_rules").select("rules").eq("lot_id", id).eq("active", true).is("zone_id", null).maybeSingle();
@@ -23,7 +23,7 @@ export default async function LotPage({ params }: { params: Promise<{ id: string
     <main style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
       <p><Link href="/operator">← All lots</Link></p>
       <h1>{lot.name}</h1>
-      <p>{lot.city} · {lot.category} · <em>{lot.status}</em>{lot.is_synthetic ? " · synthetic demo lot" : ""}</p>
+      <p>{lot.city} · {lot.category} · <em>{lot.status}</em></p>
       {lot.status === "draft" && (
         <form action={submitForApproval.bind(null, id)}><button type="submit">Submit for approval</button></form>
       )}
@@ -31,12 +31,12 @@ export default async function LotPage({ params }: { params: Promise<{ id: string
       <ul>{(zones ?? []).map((z) => <li key={z.id}>{z.name}: {z.capacity} bays, {Math.round(Number(z.reservable_pct) * 100)}% reservable ({z.reserved_count} sold)</li>)}</ul>
       <h2>Pricing</h2>
       <RulesForm lotId={id} base={rules.baseRatePerHour / 100} floor={rules.floorMultiplier} ceiling={rules.ceilingMultiplier} dynamic={rules.dynamicEnabled} />
-      <h3>Preview (1 hour, by predicted occupancy)</h3>
+      <h3>What-if preview of your rules (1 hour, at each occupancy level; not live data)</h3>
       <table>
         <thead><tr><th>Occupancy</th><th>Rate/hr</th><th>Label</th></tr></thead>
         <tbody>
           {preview.map((q) => (
-            <tr key={q.predictedOccupancy}><td>{Math.round(q.predictedOccupancy * 100)}%</td><td>₹{(q.ratePerHour / 100).toFixed(2)}</td><td>{q.label}</td></tr>
+            <tr key={q.predictedOccupancy}><td>{Math.round((q.predictedOccupancy ?? 0) * 100)}%</td><td>₹{(q.ratePerHour / 100).toFixed(2)}</td><td>{q.label}</td></tr>
           ))}
         </tbody>
       </table>

@@ -40,7 +40,7 @@ export function LiveLots({ lots }: { lots: LotRow[] }) {
               <div style={{ width: `${p}%`, height: 8, borderRadius: 4, background: p >= 90 ? "#c0392b" : p >= 70 ? "#e67e22" : "#27ae60" }} />
             </div>
             {s ? (
-              <span>{s.occupied}/{s.capacity} cars ({p}%){s.is_synthetic ? " · synthetic demo data" : ""}</span>
+              <span>{s.occupied}/{s.capacity} cars ({p}%)</span>
             ) : (
               <span>No live feed yet</span>
             )}
