@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { quote, DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
+import { QuoteForm } from "../../../components/QuoteForm";
 import { EtaButton } from "../../../components/EtaButton";
 import { availabilityNow } from "../../../lib/geo";
 import { supabaseServer } from "../../../lib/supabase/server";
@@ -24,7 +25,8 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
       <p>{lot.address ?? lot.city} · {lot.category}{lot.is_synthetic ? " · synthetic demo lot" : ""}</p>
       <p>{live ? `${availabilityNow(live.occupied, live.capacity)} (${live.occupied}/${live.capacity} cars now)` : "No live count yet"}</p>
       <EtaButton lotId={id} />
-      <h2>Why this price</h2>
+      <QuoteForm lotId={id} />
+      <h2>Why this price (right now)</h2>
       <p>₹{(q.ratePerHour / 100).toFixed(0)}/hr now ({q.label}).</p>
       <ol>{q.breakdown.map((s, i) => <li key={i}>{s.label}: {s.multiplier.toFixed(2)}x</li>)}</ol>
     </main>
