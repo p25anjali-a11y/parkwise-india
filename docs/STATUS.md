@@ -1,12 +1,12 @@
 # Status: what is real, what is mocked, what is missing
 
-Everything below is as of the end of milestone 12. "Tested" means unit tests, DB assertions on a real Postgres, or Playwright against a local build. Nothing here has handled real parking data or real money.
+Everything below is as of the end of milestone 13 (19 Nov 2026). "Tested" means unit tests, DB assertions on a real Postgres, or Playwright against a local build. Nothing here has handled real parking data or real money.
 
 ## Real versus mocked
 
 | Area | State | Evidence and caveats |
 |---|---|---|
-| Database, RLS, auth tables | **Real.** Supabase project in Mumbai, migrations 0001 to 0005 applied | 23 tables with RLS and 34 policies confirmed on the live project; DB assertions run on PostGIS in CI. Reservation and feed functions were verified for existence and privileges on the live DB, and behaviour in CI only |
+| Database, RLS, auth tables | **Real.** Supabase project in Mumbai, migrations 0001, 0002, 0004, 0005 and 0006 applied (0003 was the demo seed, now a test-only fixture; 0006 purged it, verified live: 0 lots, 0 synthetic rows, guard trigger present) | 23 tables with RLS and 34 policies confirmed on the live project; DB assertions run on PostGIS in CI. Reservation and feed functions were verified for existence and privileges on the live DB, and behaviour in CI only |
 | Auth (email and password) | Built, **not exercised signed-in** | No account has been created yet; email confirmation is on |
 | Lots and occupancy | **None loaded.** The demo seed is removed (migration 0006). Lots exist only when an operator or partner adds them; occupancy comes only from a connected feed or our own bookings | A lot with no fresh occupancy shows its base tariff and "No live availability". Synthetic lots are blocked by a database trigger outside test databases |
 | Feeds: signed webhook, CSV | Built and tested | No operator is connected. Webhook secrets need `FEED_ENCRYPTION_KEY` |
@@ -18,7 +18,7 @@ Everything below is as of the end of milestone 12. "Tested" means unit tests, DB
 | Payments | **Mock UPI** by default; Razorpay test-mode adapter written | Adapter tested with fake responses only. Refunds are manual |
 | Routing / ETA | **Mock** by default; Google Routes adapter written | Untested with a live key. Mappls and Ola Maps adapters **not built** |
 | Traffic | TomTom adapter written, key-gated | Untested with a live key. No key means no congestion signal. HERE not built |
-| Weather | Open-Meteo adapter written (no key) | Untested against the live API from this environment. Free for non-commercial use only |
+| Weather | Open-Meteo adapter written (no key); runs hourly once an approved lot exists | Untested against the live API from this environment. Free for non-commercial use only |
 | Calendar and events | CSV import built; **no dates loaded** | Admin must load and verify real holidays and fixtures; until then no event uplift is applied |
 | Map tiles | OpenStreetMap raster tiles | Demo only; not for production traffic |
 | Alerts | In-app, derived on read | No email, SMS or push |
