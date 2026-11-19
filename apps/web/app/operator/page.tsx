@@ -4,6 +4,7 @@ import { LiveLots, type LotRow, type Live } from "../../components/LiveOccupancy
 import { hasSupabaseEnv } from "../../lib/env";
 import { loadSeries } from "../../lib/lot-series";
 import { forecastRevenue } from "../../lib/revenue-forecast";
+import { ValetQueue, type ValetRow } from "../../components/ValetQueue";
 import { getLang } from "../../lib/lang";
 import { supabaseServer } from "../../lib/supabase/server";
 
@@ -35,6 +36,11 @@ export default async function Operator() {
     const pts = s.series.filter((p) => p.occupancy !== null).map((p) => ({ at: p.at, occupancy: p.occupancy as number, ratePerHour: p.ratePerHour }));
     return pts.length ? { name: s.name, simulated: s.simulated, ...forecastRevenue(pts, s.capacity) } : null;
   }))).filter((x): x is NonNullable<typeof x> => x !== null);
+  const { data: valetData } = await sb.from("valet_requests").select("id,status,note,created_at,lots(name)").neq("status", "done").order("created_at").limit(20);
+  const valetRows: ValetRow[] = (valetData ?? []).map((v) => ({ id: v.id, status: v.status, note: v.note, lot: (v.lots as unknown as { name: string } | null)?.name ?? "Lot", arrival: new Date(v.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) }));
+  const { data: wlAll } = await sb.from("waitlist").select("lot_id");
+  const waitBy = new Map<string, number>();
+  for (const w of wlAll ?? []) waitBy.set(w.lot_id, (waitBy.get(w.lot_id) ?? 0) + 1);
   const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
   return (
     <main className="shell">
@@ -60,6 +66,8 @@ export default async function Operator() {
           <p style={{ fontSize: 12, color: "#a3acd0" }}>{t("revenueNote")}</p>
         </section>
       )}
+      <section aria-label="Valet" data-testid="valet-queue" className="card"><h2>🛎️ {t("valetRequestsTitle")}</h2><ValetQueue rows={valetRows} /></section>
+      {waitBy.size > 0 && <section className="card" data-testid="waitlist-counts"><h2>⏳ {t("myWaitlist")}</h2>{(lots ?? []).filter((l) => waitBy.has(l.id)).map((l) => <div className="rowb" key={l.id}><span>{l.name}</span><strong>{waitBy.get(l.id)} {t("waitingCount")}</strong></div>)}</section>}
       {rows.length === 0 ? <div className="card">No lots yet. Add one to get started.</div> : <LiveLots lots={rows} />}
       <form action="/auth/signout" method="post"><button type="submit" className="btn ghost block">{t("signOut")}</button></form>
     </main>

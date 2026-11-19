@@ -11,6 +11,7 @@ export const lotInput = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
   carCapacity: z.coerce.number().int().min(1).max(20000),
+  evBays: z.coerce.number().int().min(0).max(2000).default(0),
   reservablePct: z.coerce.number().min(0).max(100),
   baseRupeesPerHour: z.coerce.number().min(1).max(5000),
 });

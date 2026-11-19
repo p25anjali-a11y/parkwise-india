@@ -12,6 +12,7 @@ import { getLang } from "../../../lib/lang";
 import { LiveLotSim } from "../../../components/LiveLotSim";
 import { BestTime } from "../../../components/BestTime";
 import { AlertForm } from "../../../components/AlertForm";
+import { WaitlistButton } from "../../../components/WaitlistButton";
 import { loadSeries } from "../../../lib/lot-series";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,11 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
   const { signals, inputs } = signalsFor(rows, now, now);
   const q = quote({ lotId: id, zoneId: "now", rules, predictedOccupancy: occ.value, arrivalTime: now, durationMin: 60, signals, inputs: [occ.input, ...inputs] });
   const ser = await loadSeries(sb, id, 7);
+  const { data: { user } } = await sb.auth.getUser();
+  const { data: wl } = user ? await sb.from("waitlist").select("id").eq("lot_id", id).eq("user_id", user.id).maybeSingle() : { data: null };
+  const { data: evz } = await sb.from("zones").select("capacity,slot_types!inner(code)").eq("lot_id", id).eq("slot_types.code", "ev");
+  const evBays = (evz ?? []).reduce((n, z) => n + z.capacity, 0);
+  const nearlyFull = occ.value !== null && occ.value >= 0.9;
   const label = occ.value === null ? "No live availability" : availabilityNow(Math.round(occ.value * 100), 100);
   const tone = label === "Nearly full" ? "red" : label === "Tight" ? "orange" : label === "Likely space" ? "green" : "grey";
   return (
@@ -54,6 +60,8 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
         {lot.data_source && <p className="muted" style={{ marginBottom: 0 }}>Lot details from {lot.data_source}, as of {lot.data_as_of}.</p>}
       </div>
       {occ.value !== null && capacity > 0 && <LiveLotSim lotId={id} capacity={capacity} initial={occ.value} simulated={occ.simulated} />}
+      {nearlyFull && <div className="card" data-testid="waitlist"><h2>⏳ {t("waitTitle")}</h2><p className="muted">{t("waitSub")}</p><WaitlistButton lotId={id} joined={!!wl} /></div>}
+      {evBays > 0 && <div className="card" data-testid="ev-bays"><h2>⚡ {t("evBays")}</h2><p style={{ marginBottom: 0 }}><span className="price">{evBays}</span> {occ.value !== null && <span className="muted">· ~{Math.max(0, Math.round(evBays * (1 - occ.value)))} {t("evEst")}</span>}</p></div>}
       {ser && <BestTime series={ser.series} t={t} />}
       <div className="card"><EtaButton lotId={id} /></div>
       <div className="card"><QuoteForm lotId={id} /></div>

@@ -23,6 +23,11 @@ export default async function Page() {
     const now = (await loadSeries(sb, a.lot_id, 1))?.series[0]?.ratePerHour ?? null;
     return { id: a.id, name: (a.lots as unknown as { name: string } | null)?.name ?? "Lot", target: a.target_rate_paise, now };
   }));
+  const { data: wlRows } = await sb.from("waitlist").select("id,lot_id,lots(name)").order("created_at").limit(10);
+  const waits = await Promise.all((wlRows ?? []).map(async (w) => {
+    const occ = (await loadSeries(sb, w.lot_id, 1))?.series[0]?.occupancy ?? null;
+    return { id: w.id, name: (w.lots as unknown as { name: string } | null)?.name ?? "Lot", lotId: w.lot_id, free: occ !== null && occ < 0.8 };
+  }));
   return (
     <main className="shell">
       <div className="top">
@@ -38,6 +43,16 @@ export default async function Page() {
           <div className="rowb" key={c.id} style={{ marginBottom: 8 }}><span>{c.label} <span className="pill demo">•• {c.plate_last4}</span></span><RemoveButton url={`/api/vehicles?id=${c.id}`} /></div>
         ))}
         <AddCar />
+      </div>
+      <div className="card" data-testid="my-waitlist">
+        <h2>⏳ {t("myWaitlist")}</h2>
+        {waits.length === 0 && <p className="muted">{t("noWaitlist")}</p>}
+        {waits.map((w) => (
+          <div className="rowb" key={w.id} style={{ marginBottom: 8 }}>
+            <span><Link href={`/lots/${w.lotId}`}><strong>{w.name}</strong></Link><br /><span className={`pill ${w.free ? "green" : "grey"}`}>{w.free ? t("waitFree") : t("waitWaiting")}</span></span>
+            <RemoveButton url={`/api/waitlist?id=${w.id}`} />
+          </div>
+        ))}
       </div>
       <div className="card" data-testid="my-alerts">
         <h2>🔔 {t("myAlerts")}</h2>
