@@ -23,7 +23,9 @@ test("login form toggles between sign in and sign up", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   await page.getByRole("button", { name: /Create an account/ }).click();
   await expect(page.getByRole("heading", { name: "Create account" })).toBeVisible();
-  await expect(page.getByPlaceholder("Password (min 8 chars)")).toHaveAttribute("minlength", "8");
+  await expect(page.getByLabel("Password (min 8 chars)")).toHaveAttribute("minlength", "8");
+  await expect(page.getByLabel(/Car model/)).toBeVisible();
+  await expect(page.getByLabel(/Number plate/)).toBeVisible();
 });
 
 test("PWA manifest and icons are served", async ({ request }) => {
@@ -72,4 +74,12 @@ test("feed webhook does not reveal whether an endpoint exists", async ({ request
 
 test("mock payment endpoint requires sign-in", async ({ request }) => {
   expect([401, 404, 503]).toContain((await request.post("/api/payments/mock", { data: { orderId: "mock_order_x" } })).status());
+});
+
+test("language can be switched to Hindi and Gujarati", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "हिन्दी" }).click();
+  await expect(page.getByText("जगह खोजिए। दाम पहले जानिए।")).toBeVisible();
+  await page.getByRole("button", { name: "ગુજરાતી" }).click();
+  await expect(page.getByText("જગ્યા શોધો. ભાવ પહેલાં જાણો.")).toBeVisible();
 });

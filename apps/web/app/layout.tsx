@@ -1,14 +1,22 @@
 import type { ReactNode } from "react";
+import "./globals.css";
 import { RegisterSW } from "../components/RegisterSW";
+import { LangProvider } from "../components/I18n";
+import { TabBar } from "../components/TabBar";
+import { getLang } from "../lib/lang";
 
 export const metadata = { title: "Parkwise India", description: "Dynamic parking: know the price and the space before you leave.", manifest: "/manifest.webmanifest" };
-export const viewport = { themeColor: "#0f766e", width: "device-width", initialScale: 1 };
+export const viewport = { themeColor: "#0e1220", width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const { lang } = await getLang();
   return (
-    <html lang="en">
-      <body style={{ fontFamily: "system-ui, sans-serif", margin: 0 }}>
-        {children}
+    <html lang={lang}>
+      <body>
+        <LangProvider lang={lang}>
+          {children}
+          <TabBar />
+        </LangProvider>
         <RegisterSW />
       </body>
     </html>
