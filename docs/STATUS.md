@@ -1,5 +1,7 @@
 # Status: what is real, what is mocked, what is missing
 
+**Update, 19 Nov 2026 evening.** Since milestone 13: migrations 0006 to 0009 are applied; 18 real places with SIMULATED occupancy replace the 12 invented lots; the app is two-sided (driver and operator sign-up, switching, operator tab bar); dark gold interface in four languages; best time to arrive, price alerts, saved cars, QR entry pass, operator revenue forecast, valet requests, EV bays, find-my-car pin and wait-list are built. Live site behaviour with signed-in accounts has not been verified. See `CLAUDE.md` for working rules.
+
 Everything below is as of the end of milestone 13 (19 Nov 2026). "Tested" means unit tests, DB assertions on a real Postgres, or Playwright against a local build. Nothing here has handled real parking data or real money.
 
 ## Real versus mocked
