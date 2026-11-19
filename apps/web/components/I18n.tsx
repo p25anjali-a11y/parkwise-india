@@ -12,7 +12,7 @@ export function LangProvider({ lang, children }: { lang: Lang; children: ReactNo
 /** Client components: translator for the visitor's language. */
 export function useT() {
   const lang = useContext(Ctx);
-  return { lang, t: (k: string) => translate(lang, k), tl: (l: string) => translateLabel(lang, l) };
+  return { lang, t: (k: string, v?: Record<string, string | number>) => translate(lang, k, v), tl: (l: string) => translateLabel(lang, l) };
 }
 
 export function LangSwitch() {
