@@ -52,20 +52,20 @@ export default function Login() {
         <label className="f">{t("password")}<input type="password" autoComplete={mode === "in" ? "current-password" : "new-password"} minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
         {mode === "up" && (
           <div className="chips" style={{ marginBottom: 12 }} role="group" aria-label="Account type">
-            <button type="button" className={kind === "driver" ? "chip on" : "chip"} onClick={() => setKind("driver")}>🚗 {t("iAmDriver")}</button>
-            <button type="button" className={kind === "operator" ? "chip on" : "chip"} onClick={() => setKind("operator")}>🏢 {t("iRunLot")}</button>
+            <button type="button" className={kind === "driver" ? "chip on" : "chip"} onClick={() => setKind("driver")}>{t("iAmDriver")}</button>
+            <button type="button" className={kind === "operator" ? "chip on" : "chip"} onClick={() => setKind("operator")}>{t("iRunLot")}</button>
           </div>
         )}
         {mode === "up" && kind === "operator" && (
           <>
-            <label className="f">🏢 {t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>
-            <label className="f">📍 {t("businessCity")}<select value={orgCity} onChange={(e) => setOrgCity(e.target.value)}><option>Mumbai</option><option>Ahmedabad</option></select></label>
+            <label className="f">{t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>
+            <label className="f">{t("businessCity")}<select value={orgCity} onChange={(e) => setOrgCity(e.target.value)}><option>Mumbai</option><option>Ahmedabad</option></select></label>
           </>
         )}
         {mode === "up" && kind === "driver" && (
           <>
-            <label className="f">🚗 {t("carModel")}<input value={carModel} onChange={(e) => setCarModel(e.target.value)} maxLength={60} /></label>
-            <label className="f">🔢 {t("carPlate")}<input value={carPlate} onChange={(e) => setCarPlate(e.target.value)} maxLength={14} autoCapitalize="characters" /></label>
+            <label className="f">{t("carModel")}<input value={carModel} onChange={(e) => setCarModel(e.target.value)} maxLength={60} /></label>
+            <label className="f">{t("carPlate")}<input value={carPlate} onChange={(e) => setCarPlate(e.target.value)} maxLength={14} autoCapitalize="characters" /></label>
           </>
         )}
         <button type="submit" className="btn blue block">{mode === "in" ? t("signIn") : t("signUp")}</button>

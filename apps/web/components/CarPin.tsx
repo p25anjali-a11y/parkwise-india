@@ -19,12 +19,12 @@ export function CarPin({ reservationId, note: n0, lat: la0, lng: ln0 }: { reserv
   }
   return (
     <div data-testid="car-pin" style={{ marginTop: 10 }}>
-      <strong>📍 {t("findCar")}</strong>
+      <strong>{t("findCar")}</strong>
       <label className="f" style={{ marginTop: 8 }}>{t("carNote")}<input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} /></label>
       <div className="chips">
-        <button type="button" className="chip" onClick={locate}>🛰️ {t("useLocation")}{pos ? " ✓" : ""}</button>
+        <button type="button" className="chip" onClick={locate}>{t("useLocation")}{pos ? " " : ""}</button>
         <button type="button" className="chip on" onClick={save}>{t("savePin")}</button>
-        {pos && <a className="chip" href={`https://www.google.com/maps/dir/?api=1&destination=${pos.lat},${pos.lng}&travelmode=walking`} target="_blank" rel="noreferrer">🚶 {t("openMap")}</a>}
+        {pos && <a className="chip" href={`https://www.google.com/maps/dir/?api=1&destination=${pos.lat},${pos.lng}&travelmode=walking`} target="_blank" rel="noreferrer">{t("openMap")}</a>}
       </div>
       {msg && <p role="status" className="muted">{msg}</p>}
     </div>

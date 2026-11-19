@@ -41,7 +41,7 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
     return { ...l, hasEv: evSet.has(l.id), label, rate: q.ratePerHour, live: occ.value !== null, simulated: occ.simulated };
   }));
 
-  const CATS = [["", "catAll", "✨"], ["mall", "catMall", "🛍️"], ["stadium", "catStadium", "🏟️"], ["hospital", "catHospital", "🏥"], ["other", "catOther", "✈️"]] as const;
+  const CATS = [["", "catAll", ""], ["mall", "catMall", ""], ["stadium", "catStadium", ""], ["hospital", "catHospital", ""], ["other", "catOther", ""]] as const;
   const shown = rows.filter((r) => (ev !== "1" || r.hasEv) && !cat || r.category === cat || (cat === "other" && !["mall", "stadium", "hospital"].includes(r.category)));
   if (sort === "cheap") shown.sort((a, b) => a.rate - b.rate);
   const cheapest = Math.min(...rows.map((r) => r.rate));
@@ -50,7 +50,7 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
   return (
     <main className="shell">
       <div className="top">
-        <h1>🔎 {t("findTitle")}</h1>
+        <h1>{t("findTitle")}</h1>
         <div className="chips" style={{ marginTop: 12 }}>
           {Object.keys(CITY_CENTRES).map((k) => (
             <Link key={k} href={`/search?city=${k}`} className={k === city ? "chip on" : "chip"}>{k}</Link>
@@ -64,9 +64,9 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
         {CATS.map(([k, key, ico]) => <Link key={k} href={href({ cat: k })} className={(cat ?? "") === k ? "chip on" : "chip"}>{ico} {t(key)}</Link>)}
       </div>
       <div className="chips" style={{ marginBottom: 10 }}>
-        <Link href={href({ ev: ev === "1" ? "0" : "1" })} className={ev === "1" ? "chip on" : "chip"}>⚡ {t("evFilter")}</Link>
-        <Link href={href({ sort: "" })} className={sort !== "cheap" ? "chip on" : "chip"}>📍 {t("sortNear")}</Link>
-        <Link href={href({ sort: "cheap" })} className={sort === "cheap" ? "chip on" : "chip"}>💸 {t("sortCheap")}</Link>
+        <Link href={href({ ev: ev === "1" ? "0" : "1" })} className={ev === "1" ? "chip on" : "chip"}>{t("evFilter")}</Link>
+        <Link href={href({ sort: "" })} className={sort !== "cheap" ? "chip on" : "chip"}>{t("sortNear")}</Link>
+        <Link href={href({ sort: "cheap" })} className={sort === "cheap" ? "chip on" : "chip"}>{t("sortCheap")}</Link>
       </div>
       <p className="muted">{t("simulatedNote")}</p>
       <div>
@@ -78,7 +78,7 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
             </div>
             <div className="muted" style={{ margin: "4px 0 8px" }}>{r.category} · {r.km.toFixed(1)} {t("nearCentre")}</div>
             <span className={`pill ${tone(r.label)}`}>{tl(r.label)}</span>{" "}
-            {r.simulated && <span className="pill demo">{t("simulatedBadge")}</span>} {r.hasEv && <span className="pill orange">⚡ EV</span>} {r.rate === cheapest && <span className="pill green">💸 {t("cheaper")}</span>}
+            {r.simulated && <span className="pill demo">{t("simulatedBadge")}</span>} {r.hasEv && <span className="pill orange">EV</span>} {r.rate === cheapest && <span className="pill green">{t("cheaper")}</span>}
           </Link>
         ))}
       </div>

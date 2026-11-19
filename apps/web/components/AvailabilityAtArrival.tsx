@@ -15,7 +15,7 @@ export function AvailabilityAtArrival({ lotId, arrivalInMin }: { lotId: string; 
   if (!a) return null;
   if (!a.available) return <p data-testid="availability" className="muted">{a.reason}</p>;
   return (
-    <p data-testid="availability" style={{ background: "#232b4d", borderRadius: 14, padding: 12 }}>
+    <p data-testid="availability" style={{ background: "#181c25", borderRadius: 14, padding: 12 }}>
       <strong>{a.label}</strong> when you arrive: about {a.freeBays.likely} bays free (range {a.freeBays.pessimistic}–{a.freeBays.optimistic}).
       {a.stale ? " Live count is stale, so this is less certain." : ""}{a.coldStart ? " New lot: limited history." : ""}
       <span className="muted" style={{ display: "block" }}>{a.simulated ? "SIMULATED data for demonstration, not a real forecast." : `Forecast, not a guarantee. Model ${a.modelVersion}, built from this lot's own recorded occupancy.`}</span>

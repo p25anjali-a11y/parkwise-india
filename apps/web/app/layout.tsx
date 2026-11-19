@@ -6,7 +6,7 @@ import { TabBar } from "../components/TabBar";
 import { getLang } from "../lib/lang";
 
 export const metadata = { title: "Parkwise India", description: "Dynamic parking: know the price and the space before you leave.", manifest: "/manifest.webmanifest" };
-export const viewport = { themeColor: "#0e1220", width: "device-width", initialScale: 1 };
+export const viewport = { themeColor: "#0b0d12", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const { lang } = await getLang();

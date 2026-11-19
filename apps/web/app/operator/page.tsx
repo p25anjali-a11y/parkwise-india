@@ -44,10 +44,10 @@ export default async function Operator() {
   const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
   return (
     <main className="shell">
-      <div className="top"><div className="row"><span style={{ fontSize: 44 }}>🏢</span><div><h1>{t("yourLots")}</h1><p>{user?.email}</p></div></div></div>
+      <div className="top"><div className="row"><span style={{ fontSize: 44 }}></span><div><h1>{t("yourLots")}</h1><p>{user?.email}</p></div></div></div>
       <div className="lift" style={{ display: "grid", gap: 10, marginBottom: 14 }}>
-        <Link href="/operator/lots/new" className="btn block">➕ {t("addLot")}</Link>
-        <div className="chips"><Link href="/operator/analytics" className="chip">📈 {t("opTabStats")}</Link><Link href="/operator/integrations" className="chip">🔌 {t("opTabFeeds")}</Link><Link href="/driver" className="chip">🚗 {t("switchDriver")}</Link></div>
+        <Link href="/operator/lots/new" className="btn block">{t("addLot")}</Link>
+        <div className="chips"><Link href="/operator/analytics" className="chip">{t("opTabStats")}</Link><Link href="/operator/integrations" className="chip">{t("opTabFeeds")}</Link><Link href="/driver" className="chip">{t("switchDriver")}</Link></div>
       </div>
       {alerts.length > 0 && (
         <section aria-label="Alerts" data-testid="alerts" className="card">
@@ -58,7 +58,7 @@ export default async function Operator() {
       )}
       {forecasts.length > 0 && (
         <section aria-label="Revenue forecast" data-testid="revenue-forecast" className="card">
-          <h2>💰 {t("revenueForecast")}</h2>
+          <h2>{t("revenueForecast")}</h2>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead><tr><th align="left">Lot</th><th align="right">{t("expected")}</th></tr></thead>
             <tbody>{forecasts.map((f) => <tr key={f.name}><td>{f.name}{f.simulated ? " (demo)" : ""}</td><td align="right">₹{Math.round(f.totalPaise / 100).toLocaleString("en-IN")}</td></tr>)}</tbody>
@@ -66,7 +66,7 @@ export default async function Operator() {
           <p style={{ fontSize: 12, color: "#a3acd0" }}>{t("revenueNote")}</p>
         </section>
       )}
-      <section aria-label="Valet" data-testid="valet-queue" className="card"><h2>🛎️ {t("valetRequestsTitle")}</h2><ValetQueue rows={valetRows} /></section>
+      <section aria-label="Valet" data-testid="valet-queue" className="card"><h2>{t("valetRequestsTitle")}</h2><ValetQueue rows={valetRows} /></section>
       {waitBy.size > 0 && <section className="card" data-testid="waitlist-counts"><h2>⏳ {t("myWaitlist")}</h2>{(lots ?? []).filter((l) => waitBy.has(l.id)).map((l) => <div className="rowb" key={l.id}><span>{l.name}</span><strong>{waitBy.get(l.id)} {t("waitingCount")}</strong></div>)}</section>}
       {rows.length === 0 ? <div className="card">No lots yet. Add one to get started.</div> : <LiveLots lots={rows} />}
       <form action="/auth/signout" method="post"><button type="submit" className="btn ghost block">{t("signOut")}</button></form>

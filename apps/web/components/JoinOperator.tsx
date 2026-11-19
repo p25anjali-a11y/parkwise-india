@@ -15,8 +15,8 @@ export function JoinOperator({ cities, defaultName = "", defaultCity = "Mumbai" 
   }
   return (
     <form onSubmit={go}>
-      <label className="f">🏢 {t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>
-      <label className="f">📍 {t("businessCity")}<select value={city} onChange={(e) => setCity(e.target.value)}>{cities.map((c) => <option key={c}>{c}</option>)}</select></label>
+      <label className="f">{t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>
+      <label className="f">{t("businessCity")}<select value={city} onChange={(e) => setCity(e.target.value)}>{cities.map((c) => <option key={c}>{c}</option>)}</select></label>
       <button className="btn green block" type="submit">{t("joinBtn")}</button>
       {msg && <p role="alert" className="err">{msg}</p>}
     </form>

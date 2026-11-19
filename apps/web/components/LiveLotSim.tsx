@@ -5,7 +5,7 @@ import { useT } from "./I18n";
 const COLS = 8;
 const ROWS = 5;
 const N = COLS * ROWS;
-const COLOURS = ["#2f6bff", "#ff6fa8", "#ffc83d", "#22b573", "#ff8a3d", "#7b5cff"];
+const COLOURS = ["#8fa6e8", "#c9a96a", "#a9b1c4", "#5cc9a0", "#d98b6a", "#b59bd8"];
 // 0 free, 1 parked, 2 just arrived, 3 leaving
 type Bay = 0 | 1 | 2 | 3;
 
@@ -75,9 +75,9 @@ export function LiveLotSim({ lotId, capacity, initial, simulated }: { lotId: str
   return (
     <div className="lotsim" data-testid="live-lot">
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${t("liveTitle")}: ${pct}% ${t("full")}`}>
-        <rect x="0" y="0" width={width} height={height} rx="14" fill="#2a3052" />
-        <rect x={width / 2 - 40} y="0" width="80" height="12" fill="#ffc83d" />
-        <text x={width / 2} y="32" textAnchor="middle" fill="#ffc83d" fontSize="14" fontWeight="800">GATE ▼</text>
+        <rect x="0" y="0" width={width} height={height} rx="14" fill="#10131a" />
+        <rect x={width / 2 - 40} y="0" width="80" height="12" fill="#c9a96a" />
+        <text x={width / 2} y="32" textAnchor="middle" fill="#c9a96a" fontSize="14" fontWeight="800">GATE ▼</text>
         {bays.map((b, i) => {
           const c = i % COLS, r = Math.floor(i / COLS);
           const x = left + c * (W + gx), y = top + r * (H + gy);
@@ -86,16 +86,16 @@ export function LiveLotSim({ lotId, capacity, initial, simulated }: { lotId: str
               <rect className="bay" x={x} y={y} width={W} height={H} rx="6" />
               {b !== 0 && (
                 <g className="car" style={{ opacity: b === 3 ? 0.25 : 1 }}>
-                  <rect x={x + 6} y={y + 6} width={W - 12} height={H - 12} rx="9" fill={b === 2 ? "#22b573" : COLOURS[i % COLOURS.length]} />
-                  <rect x={x + 10} y={y + 12} width={W - 20} height="12" rx="4" fill="#dbe7ff" opacity="0.9" />
+                  <rect x={x + 6} y={y + 6} width={W - 12} height={H - 12} rx="9" fill={b === 2 ? "#5cc9a0" : COLOURS[i % COLOURS.length]} />
+                  <rect x={x + 10} y={y + 12} width={W - 20} height="12" rx="4" fill="#0b0d12" opacity="0.9" />
                 </g>
               )}
             </g>
           );
         })}
       </svg>
-      <div className="bar" style={{ marginTop: 10, background: "#4a5278" }}>
-        <div style={{ width: `${pct}%`, background: pct >= 90 ? "#f0455a" : pct >= 70 ? "#ff8a3d" : "#22b573" }} />
+      <div className="bar" style={{ marginTop: 10, background: "#181c25" }}>
+        <div style={{ width: `${pct}%`, background: pct >= 90 ? "#ef6f77" : pct >= 70 ? "#e6b05a" : "#5cc9a0" }} />
       </div>
       <div className="stats">
         <div><b>{pct}%</b>{t("full")}</div>

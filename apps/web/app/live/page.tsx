@@ -27,7 +27,7 @@ export default async function Live({ searchParams }: { searchParams: Promise<{ l
   }
   return (
     <main className="shell">
-      <div className="top"><h1>🚗 {t("liveTitle")}</h1><p>{t("liveSub")}</p></div>
+      <div className="top"><h1>{t("liveTitle")}</h1><p>{t("liveSub")}</p></div>
       <div className="card lift">
         <div className="muted" style={{ marginBottom: 8 }}>{t("chooseLot")}</div>
         <div className="chips">
