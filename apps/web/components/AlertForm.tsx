@@ -13,7 +13,7 @@ export function AlertForm({ lotId, suggested }: { lotId: string; suggested: numb
   }
   return (
     <form onSubmit={save}>
-      <h2>🔔 {t("priceAlert")}</h2>
+      <h2>{t("priceAlert")}</h2>
       <p className="muted">{t("alertHint")}</p>
       <label className="f">₹/hr<input type="number" inputMode="numeric" min={1} max={5000} value={v} onChange={(e) => setV(e.target.value)} required /></label>
       <button className="btn blue block" type="submit">{t("alertSet")}</button>

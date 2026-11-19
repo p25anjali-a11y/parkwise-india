@@ -8,7 +8,7 @@ export default function NewLot() {
   const f = { display: "grid", gap: 4, fontWeight: 700 } as const;
   return (
     <main className="shell">
-      <div className="top"><h1>➕ Add a lot</h1><p>It goes live after a platform admin approves it.</p></div>
+      <div className="top"><h1>Add a lot</h1><p>It goes live after a platform admin approves it.</p></div>
       <form action={action} className="card lift" style={{ display: "grid", gap: 12 }}>
         <label style={f}>Name<input name="name" required minLength={3} /></label>
         <label style={f}>City<select name="city">{CITIES.map((c) => <option key={c}>{c}</option>)}</select></label>

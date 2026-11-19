@@ -7,7 +7,7 @@ export default async function Home() {
   const { t } = await getLang();
   return (
     <main className="shell">
-      <div className="top" style={{ paddingBottom: 56 }}>
+      <div className="top">
         <div className="row">
           <Mascot size={80} />
           <div>
@@ -20,21 +20,21 @@ export default async function Home() {
       <div className="card lift">
         <p style={{ marginTop: 0 }}>{t("heroSub")}</p>
         <div className="chips" style={{ marginBottom: 14 }}>
-          <span className="pill green">🟢 {t("offPeak")}</span>
-          <span className="pill orange">🟠 {t("standard")}</span>
-          <span className="pill red">🔴 {t("peak")}</span>
+          <span className="pill green">{t("offPeak")}</span>
+          <span className="pill orange">{t("standard")}</span>
+          <span className="pill red">{t("peak")}</span>
         </div>
         <Link href="/search" className="btn blue block">{t("findParking")}</Link>
         <p style={{ textAlign: "center", marginBottom: 0 }}><Link href="/login">{t("signIn")}</Link></p>
       </div>
       <h2 style={{ margin: "8px 0 10px" }}>{t("howTitle")}</h2>
-      {[["🔎", "how1", "how1s", "var(--blue)"], ["💸", "how2", "how2s", "var(--yellow)"], ["🎫", "how3", "how3s", "var(--green)"]].map(([ico, a, b, c]) => (
-        <div key={a} className="card" style={{ display: "flex", gap: 14, alignItems: "center", borderLeft: `6px solid ${c}` }}>
-          <span style={{ fontSize: 38 }}>{ico}</span>
+      {[["01", "how1", "how1s"], ["02", "how2", "how2s"], ["03", "how3", "how3s"]].map(([ico, a, b]) => (
+        <div key={a} className="card step" >
+          <span className="num">{ico}</span>
           <div><h3 style={{ marginBottom: 2 }}>{t(a!)}</h3><div className="muted">{t(b!)}</div></div>
         </div>
       ))}
-      <Link href="/login" className="btn ghost block" style={{ marginTop: 6 }}>🏢 {t("iRunLot")}</Link>
+      <Link href="/login" className="btn ghost block" style={{ marginTop: 6 }}>{t("iRunLot")}</Link>
     </main>
   );
 }

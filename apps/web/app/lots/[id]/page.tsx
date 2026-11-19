@@ -61,7 +61,7 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
       </div>
       {occ.value !== null && capacity > 0 && <LiveLotSim lotId={id} capacity={capacity} initial={occ.value} simulated={occ.simulated} />}
       {nearlyFull && <div className="card" data-testid="waitlist"><h2>⏳ {t("waitTitle")}</h2><p className="muted">{t("waitSub")}</p><WaitlistButton lotId={id} joined={!!wl} /></div>}
-      {evBays > 0 && <div className="card" data-testid="ev-bays"><h2>⚡ {t("evBays")}</h2><p style={{ marginBottom: 0 }}><span className="price">{evBays}</span> {occ.value !== null && <span className="muted">· ~{Math.max(0, Math.round(evBays * (1 - occ.value)))} {t("evEst")}</span>}</p></div>}
+      {evBays > 0 && <div className="card" data-testid="ev-bays"><h2>{t("evBays")}</h2><p style={{ marginBottom: 0 }}><span className="price">{evBays}</span> {occ.value !== null && <span className="muted">· ~{Math.max(0, Math.round(evBays * (1 - occ.value)))} {t("evEst")}</span>}</p></div>}
       {ser && <BestTime series={ser.series} t={t} />}
       <div className="card"><EtaButton lotId={id} /></div>
       <div className="card"><QuoteForm lotId={id} /></div>

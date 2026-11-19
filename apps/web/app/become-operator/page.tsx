@@ -16,7 +16,7 @@ export default async function Join() {
   }
   return (
     <main className="shell">
-      <div className="top"><h1>🏢 {t("joinTitle")}</h1><p>{t("joinSub")}</p></div>
+      <div className="top"><h1>{t("joinTitle")}</h1><p>{t("joinSub")}</p></div>
       <div className="card lift"><JoinOperator cities={CITIES} /></div>
       <p style={{ textAlign: "center" }}><Link href="/driver">← {t("switchDriver")}</Link></p>
     </main>

@@ -18,7 +18,7 @@ export function AddCar() {
     <form onSubmit={add}>
       <label className="f">{t("carModel")}<input value={model} onChange={(e) => setModel(e.target.value)} required minLength={2} /></label>
       <label className="f">{t("carPlate")}<input value={plate} onChange={(e) => setPlate(e.target.value)} required minLength={6} /></label>
-      <button className="btn blue block" type="submit">🚗 {t("addCar")}</button>
+      <button className="btn blue block" type="submit">{t("addCar")}</button>
       {msg && <p role="alert" className="err">{msg}</p>}
     </form>
   );

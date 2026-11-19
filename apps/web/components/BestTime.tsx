@@ -13,7 +13,7 @@ export function BestTime({ series, t }: { series: SeriesPoint[]; t: T }) {
   const cheapest = Math.min(...series.map((s) => s.ratePerHour));
   return (
     <div className="card" data-testid="best-time">
-      <h2>⏰ {t("bestTimeTitle")}</h2>
+      <h2>{t("bestTimeTitle")}</h2>
       {best.kind === "later"
         ? <p><strong>{t("saveLine", { time: hhmm(best.best.at), amt: (best.savingPaise / 100).toFixed(0), pct: best.savingPct })}</strong></p>
         : <p><strong>{t("cheapestNow")}</strong></p>}

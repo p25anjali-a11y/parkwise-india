@@ -17,15 +17,15 @@ export function ValetButton({ reservationId, valet }: { reservationId: string; v
     const key = valet.status === "accepted" ? "valetAccepted" : valet.status === "done" ? "valetDone" : "valetRequested";
     return (
       <div data-testid="valet" style={{ marginTop: 10 }}>
-        <span className={`pill ${valet.status === "done" ? "green" : valet.status === "accepted" ? "orange" : "demo"}`}>🛎️ {t(key)}</span>{" "}
+        <span className={`pill ${valet.status === "done" ? "green" : valet.status === "accepted" ? "orange" : "demo"}`}>{t(key)}</span>{" "}
         {valet.status === "requested" && <button type="button" className="chip" onClick={cancel}>{t("valetCancel")}</button>}
       </div>
     );
   }
   return (
     <div data-testid="valet" style={{ marginTop: 10 }}>
-      <label className="f">🛎️ {t("valetNote")}<input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} /></label>
-      <button type="button" className="btn ghost block" onClick={ask}>🛎️ {t("valetAsk")}</button>
+      <label className="f">{t("valetNote")}<input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} /></label>
+      <button type="button" className="btn ghost block" onClick={ask}>{t("valetAsk")}</button>
       <p className="muted" style={{ marginBottom: 0 }}>{t("valetHint")}</p>
       {msg && <p role="alert" className="err">{msg}</p>}
     </div>

@@ -34,10 +34,10 @@ export default async function Page() {
         <div className="row"><Mascot size={64} /><div><h1>{t("welcome")}</h1><p>{t("signedInAs")} {user?.email} ({profile?.role ?? "driver"})</p></div></div>
       </div>
       {(meta.car_model || meta.car_plate) && (
-        <div className="card lift"><div className="muted">🚗 {t("yourCar")}</div><h3 style={{ marginBottom: 0 }}>{meta.car_model} {meta.car_plate && <span className="pill demo">{meta.car_plate}</span>}</h3></div>
+        <div className="card lift"><div className="muted">{t("yourCar")}</div><h3 style={{ marginBottom: 0 }}>{meta.car_model} {meta.car_plate && <span className="pill demo">{meta.car_plate}</span>}</h3></div>
       )}
       <div className="card" data-testid="saved-cars">
-        <h2>🚗 {t("savedCars")}</h2>
+        <h2>{t("savedCars")}</h2>
         {(cars ?? []).length === 0 && <p className="muted">{t("noCars")}</p>}
         {(cars ?? []).map((c) => (
           <div className="rowb" key={c.id} style={{ marginBottom: 8 }}><span>{c.label} <span className="pill demo">•• {c.plate_last4}</span></span><RemoveButton url={`/api/vehicles?id=${c.id}`} /></div>
@@ -55,7 +55,7 @@ export default async function Page() {
         ))}
       </div>
       <div className="card" data-testid="my-alerts">
-        <h2>🔔 {t("myAlerts")}</h2>
+        <h2>{t("myAlerts")}</h2>
         {alerts.length === 0 && <p className="muted">{t("noAlerts")}</p>}
         {alerts.map((a) => {
           const hit = a.now !== null && a.now <= a.target;
@@ -68,10 +68,10 @@ export default async function Page() {
         })}
       </div>
       {profile?.role && profile.role !== "driver"
-        ? <Link href={profile.role === "platform_admin" ? "/admin" : "/operator"} className="btn green block" style={{ marginBottom: 12 }}>🏢 {t("openOperator")}</Link>
-        : <div className="card"><h3>🏢 {t("runLotCard")}</h3><p className="muted">{t("runLotSub")}</p><Link href="/become-operator" className="btn green block">{t("joinTitle")}</Link></div>}
-      <Link href="/driver/reservations" className="btn blue block" style={{ marginBottom: 12 }}>🎟️ {t("myReservations")}</Link>
-      <Link href="/search" className="btn block" style={{ marginBottom: 12 }}>🔎 {t("findTitle")}</Link>
+        ? <Link href={profile.role === "platform_admin" ? "/admin" : "/operator"} className="btn green block" style={{ marginBottom: 12 }}>{t("openOperator")}</Link>
+        : <div className="card"><h3>{t("runLotCard")}</h3><p className="muted">{t("runLotSub")}</p><Link href="/become-operator" className="btn green block">{t("joinTitle")}</Link></div>}
+      <Link href="/driver/reservations" className="btn blue block" style={{ marginBottom: 12 }}>{t("myReservations")}</Link>
+      <Link href="/search" className="btn block" style={{ marginBottom: 12 }}>{t("findTitle")}</Link>
       <div className="card"><div className="muted" style={{ marginBottom: 8 }}>{t("language")}</div><LangSwitch /></div>
       <form action="/auth/signout" method="post"><button type="submit" className="btn ghost block">{t("signOut")}</button></form>
     </main>

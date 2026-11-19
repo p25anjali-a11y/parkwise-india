@@ -21,7 +21,7 @@ export default async function Reservations() {
   if (secret) for (const r of data ?? []) if (r.status === "confirmed") qr.set(r.id, await QRCode.toString(signPass(r.id, secret), { type: "svg", margin: 1, color: { dark: "#1d2340", light: "#ffffff" } }));
   return (
     <main className="shell">
-      <div className="top"><h1>🎟️ {t("myReservations")}</h1></div>
+      <div className="top"><h1>{t("myReservations")}</h1></div>
       <div className="lift">
         {(data ?? []).length === 0 && <div className="card">{t("noReservations")}</div>}
         {(data ?? []).map((r) => (
@@ -30,7 +30,7 @@ export default async function Reservations() {
             <div className="muted">{new Date(r.arrival_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · {r.duration_min / 60} h</div>
             {qr.has(r.id) && (
               <div style={{ margin: "12px 0", textAlign: "center" }} data-testid="entry-pass">
-                <strong>🎫 {t("entryPass")}</strong>
+                <strong>{t("entryPass")}</strong>
                 <div style={{ width: 180, margin: "8px auto", borderRadius: 12, overflow: "hidden" }} dangerouslySetInnerHTML={{ __html: qr.get(r.id)! }} />
                 <div className="muted">{t("passHint")}</div>
               </div>
