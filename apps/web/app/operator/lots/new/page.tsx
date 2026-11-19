@@ -17,6 +17,7 @@ export default function NewLot() {
         <label style={f}>Latitude<input name="lat" type="number" step="any" required /></label>
         <label style={f}>Longitude<input name="lng" type="number" step="any" required /></label>
         <label style={f}>Car capacity<input name="carCapacity" type="number" min={1} required /></label>
+        <label style={f}>EV charging bays (0 if none)<input name="evBays" type="number" min={0} defaultValue={0} /></label>
         <label style={f}>Reservable share (%)<input name="reservablePct" type="number" min={0} max={100} defaultValue={20} /></label>
         <label style={f}>Base rate (₹ per hour)<input name="baseRupeesPerHour" type="number" min={1} step="0.5" defaultValue={60} /></label>
         <button disabled={pending} type="submit" className="btn blue block">{pending ? "Saving…" : "Create draft lot"}</button>

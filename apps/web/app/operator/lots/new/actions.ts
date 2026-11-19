@@ -24,6 +24,11 @@ export async function createLot(_prev: { error?: string }, form: FormData): Prom
   const { data: car } = await sb.from("slot_types").select("id").eq("code", "car").single();
   const z = await sb.from("zones").insert({ lot_id: lot.id, slot_type_id: car?.id, name: "Cars", capacity: v.carCapacity, reservable_pct: v.reservablePct / 100 });
   if (z.error) return { error: z.error.message };
+  if (v.evBays > 0) {
+    const { data: ev } = await sb.from("slot_types").select("id").eq("code", "ev").single();
+    const ze = await sb.from("zones").insert({ lot_id: lot.id, slot_type_id: ev?.id, name: "EV bays", capacity: v.evBays, reservable_pct: 0 });
+    if (ze.error) return { error: ze.error.message };
+  }
   const r = await sb.from("price_rules").insert({ lot_id: lot.id, name: "Default dynamic tariff", rules: { ...DEFAULT_RULES, baseRatePerHour: rupeesToPaise(v.baseRupeesPerHour) } });
   if (r.error) return { error: r.error.message };
   redirect(`/operator/lots/${lot.id}`);
