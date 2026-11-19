@@ -10,6 +10,9 @@ import { signalsFor } from "../../../lib/quote-inputs";
 import { supabaseServer } from "../../../lib/supabase/server";
 import { getLang } from "../../../lib/lang";
 import { LiveLotSim } from "../../../components/LiveLotSim";
+import { BestTime } from "../../../components/BestTime";
+import { AlertForm } from "../../../components/AlertForm";
+import { loadSeries } from "../../../lib/lot-series";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +32,7 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
   const occ = resolveOccupancy({ lot, forecast: null, live: live ?? null, arrival: now, now, rainProb: rainProbAt(rows, now) });
   const { signals, inputs } = signalsFor(rows, now, now);
   const q = quote({ lotId: id, zoneId: "now", rules, predictedOccupancy: occ.value, arrivalTime: now, durationMin: 60, signals, inputs: [occ.input, ...inputs] });
+  const ser = await loadSeries(sb, id, 7);
   const label = occ.value === null ? "No live availability" : availabilityNow(Math.round(occ.value * 100), 100);
   const tone = label === "Nearly full" ? "red" : label === "Tight" ? "orange" : label === "Likely space" ? "green" : "grey";
   return (
@@ -50,8 +54,10 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
         {lot.data_source && <p className="muted" style={{ marginBottom: 0 }}>Lot details from {lot.data_source}, as of {lot.data_as_of}.</p>}
       </div>
       {occ.value !== null && capacity > 0 && <LiveLotSim lotId={id} capacity={capacity} initial={occ.value} simulated={occ.simulated} />}
+      {ser && <BestTime series={ser.series} t={t} />}
       <div className="card"><EtaButton lotId={id} /></div>
       <div className="card"><QuoteForm lotId={id} /></div>
+      <div className="card"><AlertForm lotId={id} suggested={Math.max(1, Math.floor(q.ratePerHour / 100 - 5))} /></div>
       <div className="card">
         <h2>{t("whyPrice")}</h2>
         <ol className="steps">{q.breakdown.map((s, i) => <li key={i}><span>{s.label}</span><strong>{s.multiplier.toFixed(2)}x</strong></li>)}</ol>

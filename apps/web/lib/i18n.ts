@@ -14,6 +14,28 @@ export function asLang(v: string | undefined | null): Lang {
 type Dict = Record<string, string>;
 
 const en: Dict = {
+  bestTimeTitle: "Best time to arrive",
+  cheapestNow: "Right now is already the cheapest hour.",
+  saveIfLater: "Arrive later and pay less per hour:",
+  saveLine: "Arrive at {time} to save ₹{amt} an hour ({pct}% less)",
+  priceAlert: "Price alert",
+  alertHint: "Tell me when the price per hour drops to or below:",
+  alertSet: "Set alert",
+  alertSaved: "Alert saved.",
+  alertReached: "Reached! Price is now ₹{p}/hr",
+  alertWaiting: "Waiting: now ₹{p}/hr",
+  myAlerts: "My price alerts",
+  noAlerts: "No alerts yet. Open a lot to set one.",
+  remove: "Remove",
+  savedCars: "Saved cars",
+  addCar: "Add a car",
+  noCars: "No saved cars yet.",
+  entryPass: "Entry pass",
+  passHint: "Show this at the gate",
+  revenueForecast: "Revenue forecast, next 12 hours",
+  revenueNote: "Estimate: parked cars × price each hour. Demo lots use simulated parking counts.",
+  expected: "Expected",
+  signInFirst: "Sign in to do this.",
   appName: "Parkwise India",
   heroTitle: "Find a spot. Know the price.",
   heroSub: "Parking that costs less when it's quiet and tells you the price before you leave home.",
@@ -73,6 +95,28 @@ const en: Dict = {
 };
 
 const hi: Dict = {
+  bestTimeTitle: "पहुँचने का सबसे अच्छा समय",
+  cheapestNow: "अभी का घंटा ही सबसे सस्ता है।",
+  saveIfLater: "देर से आएँ, प्रति घंटा कम दें:",
+  saveLine: "{time} पर आएँ, ₹{amt} प्रति घंटा बचाएँ ({pct}% कम)",
+  priceAlert: "दर अलर्ट",
+  alertHint: "जब प्रति घंटा दर इतनी या कम हो जाए तो बताएँ:",
+  alertSet: "अलर्ट लगाएँ",
+  alertSaved: "अलर्ट सेव हो गया।",
+  alertReached: "पहुँच गया! अब दर ₹{p}/घंटा",
+  alertWaiting: "इंतज़ार: अभी ₹{p}/घंटा",
+  myAlerts: "मेरे दर अलर्ट",
+  noAlerts: "अभी कोई अलर्ट नहीं। पार्किंग खोलकर लगाएँ।",
+  remove: "हटाएँ",
+  savedCars: "सेव की हुई कारें",
+  addCar: "कार जोड़ें",
+  noCars: "अभी कोई कार सेव नहीं।",
+  entryPass: "एंट्री पास",
+  passHint: "गेट पर यह दिखाएँ",
+  revenueForecast: "आय का अनुमान, अगले 12 घंटे",
+  revenueNote: "अनुमान: खड़ी कारें × हर घंटे की दर। डेमो पार्किंग में गिनती नकली है।",
+  expected: "अनुमानित",
+  signInFirst: "इसके लिए साइन इन करें।",
   appName: "पार्कवाइज़ इंडिया",
   heroTitle: "जगह खोजिए। दाम पहले जानिए।",
   heroSub: "शांत समय में कम दाम, और घर से निकलने से पहले पूरा किराया पता।",
@@ -132,6 +176,28 @@ const hi: Dict = {
 };
 
 const gu: Dict = {
+  bestTimeTitle: "પહોંચવાનો શ્રેષ્ઠ સમય",
+  cheapestNow: "અત્યારનો કલાક જ સૌથી સસ્તો છે.",
+  saveIfLater: "મોડા આવો, કલાકના ઓછા ચૂકવો:",
+  saveLine: "{time} વાગ્યે આવો, કલાકના ₹{amt} બચાવો ({pct}% ઓછું)",
+  priceAlert: "ભાવ એલર્ટ",
+  alertHint: "કલાકનો ભાવ આટલો કે ઓછો થાય ત્યારે જણાવો:",
+  alertSet: "એલર્ટ મૂકો",
+  alertSaved: "એલર્ટ સેવ થયું.",
+  alertReached: "પહોંચી ગયો! હવે ભાવ ₹{p}/કલાક",
+  alertWaiting: "રાહ: અત્યારે ₹{p}/કલાક",
+  myAlerts: "મારા ભાવ એલર્ટ",
+  noAlerts: "હજી કોઈ એલર્ટ નથી. પાર્કિંગ ખોલીને મૂકો.",
+  remove: "કાઢો",
+  savedCars: "સેવ કરેલી કાર",
+  addCar: "કાર ઉમેરો",
+  noCars: "હજી કોઈ કાર સેવ નથી.",
+  entryPass: "એન્ટ્રી પાસ",
+  passHint: "ગેટ પર આ બતાવો",
+  revenueForecast: "આવકનો અંદાજ, આગામી 12 કલાક",
+  revenueNote: "અંદાજ: પાર્ક થયેલી કાર × દરેક કલાકનો ભાવ. ડેમો પાર્કિંગમાં ગણતરી નકલી છે.",
+  expected: "અંદાજિત",
+  signInFirst: "આ માટે સાઇન ઇન કરો.",
   appName: "પાર્કવાઇઝ ઇન્ડિયા",
   heroTitle: "જગ્યા શોધો. ભાવ પહેલાં જાણો.",
   heroSub: "શાંત સમયે ઓછો ભાવ, અને ઘરેથી નીકળતાં પહેલાં પૂરું ભાડું ખબર.",
@@ -191,6 +257,28 @@ const gu: Dict = {
 };
 
 const mr: Dict = {
+  bestTimeTitle: "पोहोचण्याची सर्वोत्तम वेळ",
+  cheapestNow: "आत्ताचा तास सर्वात स्वस्त आहे.",
+  saveIfLater: "उशिरा या, तासाला कमी द्या:",
+  saveLine: "{time} वाजता या, तासाला ₹{amt} वाचवा ({pct}% कमी)",
+  priceAlert: "दर अलर्ट",
+  alertHint: "तासाचा दर इतका किंवा कमी झाला की सांगा:",
+  alertSet: "अलर्ट लावा",
+  alertSaved: "अलर्ट सेव्ह झाला.",
+  alertReached: "पोहोचला! आता दर ₹{p}/तास",
+  alertWaiting: "प्रतीक्षा: आत्ता ₹{p}/तास",
+  myAlerts: "माझे दर अलर्ट",
+  noAlerts: "अजून अलर्ट नाही. पार्किंग उघडून लावा.",
+  remove: "काढा",
+  savedCars: "सेव्ह केलेल्या कार",
+  addCar: "कार जोडा",
+  noCars: "अजून कार सेव्ह नाही.",
+  entryPass: "एंट्री पास",
+  passHint: "गेटवर हे दाखवा",
+  revenueForecast: "महसुलाचा अंदाज, पुढील 12 तास",
+  revenueNote: "अंदाज: पार्क केलेल्या कार × प्रत्येक तासाचा दर. डेमो पार्किंगमध्ये मोजणी बनावट आहे.",
+  expected: "अंदाजित",
+  signInFirst: "यासाठी साइन इन करा.",
   appName: "पार्कवाइज इंडिया",
   heroTitle: "जागा शोधा. दर आधीच जाणून घ्या.",
   heroSub: "शांत वेळी कमी दर, आणि घराबाहेर पडण्यापूर्वी पूर्ण भाडे माहीत.",
@@ -251,8 +339,9 @@ const mr: Dict = {
 
 export const DICTS: Record<Lang, Dict> = { en, hi, gu, mr };
 
-export function translate(lang: Lang, key: string): string {
-  return DICTS[lang][key] ?? en[key] ?? key;
+export function translate(lang: Lang, key: string, vars?: Record<string, string | number>): string {
+  const s = DICTS[lang][key] ?? en[key] ?? key;
+  return vars ? s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? "")) : s;
 }
 
 /** Maps the English labels produced by the pricing and availability code to dictionary keys. */

@@ -2,6 +2,9 @@ import Link from "next/link";
 import { computeAlerts } from "../../lib/alerts";
 import { LiveLots, type LotRow, type Live } from "../../components/LiveOccupancy";
 import { hasSupabaseEnv } from "../../lib/env";
+import { loadSeries } from "../../lib/lot-series";
+import { forecastRevenue } from "../../lib/revenue-forecast";
+import { getLang } from "../../lib/lang";
 import { supabaseServer } from "../../lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +28,13 @@ export default async function Operator() {
       lastFeedAt: feedBy.get(l.id) ?? null, maxPFullNext2h: maxFull.get(l.id) ?? null,
     })),
   );
+  const { t } = await getLang();
+  const forecasts = (await Promise.all((lots ?? []).filter((l) => l.status === "approved").slice(0, 12).map(async (l) => {
+    const s = await loadSeries(sb, l.id, 12);
+    if (!s || s.capacity <= 0) return null;
+    const pts = s.series.filter((p) => p.occupancy !== null).map((p) => ({ at: p.at, occupancy: p.occupancy as number, ratePerHour: p.ratePerHour }));
+    return pts.length ? { name: s.name, simulated: s.simulated, ...forecastRevenue(pts, s.capacity) } : null;
+  }))).filter((x): x is NonNullable<typeof x> => x !== null);
   const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
   return (
     <main style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
@@ -34,7 +44,17 @@ export default async function Operator() {
         <section aria-label="Alerts" data-testid="alerts">
           <h2>Alerts</h2>
           <ul>{alerts.map((a, i) => <li key={i}><strong>{a.severity}</strong> · <Link href={`/operator/lots/${a.lotId}`}>{a.lotName}</Link>: {a.message}</li>)}</ul>
-          <p style={{ fontSize: 12, color: "#555" }}>Alerts are shown here only; email and push notifications are not built yet.</p>
+          <p style={{ fontSize: 12, color: "#a3acd0" }}>Alerts are shown here only; email and push notifications are not built yet.</p>
+        </section>
+      )}
+      {forecasts.length > 0 && (
+        <section aria-label="Revenue forecast" data-testid="revenue-forecast">
+          <h2>💰 {t("revenueForecast")}</h2>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead><tr><th align="left">Lot</th><th align="right">{t("expected")}</th></tr></thead>
+            <tbody>{forecasts.map((f) => <tr key={f.name}><td>{f.name}{f.simulated ? " (demo)" : ""}</td><td align="right">₹{Math.round(f.totalPaise / 100).toLocaleString("en-IN")}</td></tr>)}</tbody>
+          </table>
+          <p style={{ fontSize: 12, color: "#a3acd0" }}>{t("revenueNote")}</p>
         </section>
       )}
       {rows.length === 0 ? <p>No lots yet. Add one to get started.</p> : <LiveLots lots={rows} />}
