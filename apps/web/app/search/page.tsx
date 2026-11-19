@@ -7,14 +7,17 @@ import { LotMap } from "../../components/LotMap";
 import { hasSupabaseEnv } from "../../lib/env";
 import { availabilityNow, CITY_CENTRES, sortByDistance } from "../../lib/geo";
 import { supabaseServer } from "../../lib/supabase/server";
+import { getLang } from "../../lib/lang";
+import { LangSwitch } from "../../components/I18n";
 
 export const dynamic = "force-dynamic";
 
 export default async function Search({ searchParams }: { searchParams: Promise<{ city?: string }> }) {
+  const { t, tl } = await getLang();
   const { city: c } = await searchParams;
   const city = c && c in CITY_CENTRES ? c : "Mumbai";
   const centre = CITY_CENTRES[city]!;
-  if (!hasSupabaseEnv()) return <main style={{ padding: 24 }}>Supabase is not configured for this deployment.</main>;
+  if (!hasSupabaseEnv()) return <main className="shell"><div className="card">Supabase is not configured for this deployment.</div></main>;
 
   const sb = await supabaseServer();
   const { data: lots } = await sb.from("lots").select("id,name,city,category,lat,lng,is_synthetic").eq("city", city).eq("status", "approved");
@@ -36,26 +39,35 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
     return { ...l, label, rate: q.ratePerHour, live: occ.value !== null, simulated: occ.simulated };
   }));
 
+  const tone = (l: string) => (l === "Nearly full" ? "red" : l === "Tight" ? "orange" : l === "Likely space" ? "green" : "grey");
   return (
-    <main style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <h1>Find parking</h1>
-      <nav style={{ display: "flex", gap: 12 }}>
-        {Object.keys(CITY_CENTRES).map((k) => (
-          <Link key={k} href={`/search?city=${k}`} style={{ fontWeight: k === city ? 700 : 400 }}>{k}</Link>
-        ))}
-      </nav>
-      <LotMap centre={centre} lots={rows.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, label: r.label }))} />
-      <p style={{ fontSize: 13, color: "#555" }}>
-        Availability and price are for right now. Weather and traffic are live. Lots marked SIMULATED have invented parking data for demonstration; all other lots show live availability only when their count is under 30 minutes old, otherwise their base tariff and "No live availability".
-      </p>
-      <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: 8 }}>
+    <main className="shell">
+      <div className="top">
+        <h1>🔎 {t("findTitle")}</h1>
+        <div className="chips" style={{ marginTop: 12 }}>
+          {Object.keys(CITY_CENTRES).map((k) => (
+            <Link key={k} href={`/search?city=${k}`} className={k === city ? "chip on" : "chip"}>{k}</Link>
+          ))}
+        </div>
+      </div>
+      <div className="card lift" style={{ padding: 8 }}>
+        <LotMap centre={centre} lots={rows.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, label: r.label }))} />
+      </div>
+      <p className="muted">{t("simulatedNote")}</p>
+      <div>
         {rows.map((r) => (
-          <li key={r.id} data-testid="result" style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
-            <Link href={`/lots/${r.id}`}><strong>{r.name}</strong></Link> · {r.category} · {r.km.toFixed(1)} km from centre
-            <div>{r.label} · ₹{(r.rate / 100).toFixed(0)}/hr now{r.simulated ? " · SIMULATED lot data" : r.live ? "" : " (base tariff, no fresh live data)"}</div>
-          </li>
+          <Link key={r.id} href={`/lots/${r.id}`} data-testid="result" className="card link">
+            <div className="rowb">
+              <h3 style={{ margin: 0 }}>{r.name}</h3>
+              <span className="price">₹{(r.rate / 100).toFixed(0)}<small style={{ fontSize: 14 }}>{t("perHour")}</small></span>
+            </div>
+            <div className="muted" style={{ margin: "4px 0 8px" }}>{r.category} · {r.km.toFixed(1)} {t("nearCentre")}</div>
+            <span className={`pill ${tone(r.label)}`}>{tl(r.label)}</span>{" "}
+            {r.simulated && <span className="pill demo">{t("simulatedBadge")}</span>}
+          </Link>
         ))}
-      </ul>
+      </div>
+      <div className="card"><div className="muted" style={{ marginBottom: 8 }}>{t("language")}</div><LangSwitch /></div>
     </main>
   );
 }

@@ -36,7 +36,7 @@ export function LiveLots({ lots }: { lots: LotRow[] }) {
         return (
           <li key={l.id} data-testid="lot-card" style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12 }}>
             <Link href={`/operator/lots/${l.id}`}><strong>{l.name}</strong></Link> · {l.city} · {l.category} · <em>{l.status}</em>
-            <div style={{ background: "#eee", height: 8, borderRadius: 4, margin: "8px 0" }}>
+            <div style={{ background: "#2a3256", height: 8, borderRadius: 4, margin: "8px 0" }}>
               <div style={{ width: `${p}%`, height: 8, borderRadius: 4, background: p >= 90 ? "#c0392b" : p >= 70 ? "#e67e22" : "#27ae60" }} />
             </div>
             {s ? (

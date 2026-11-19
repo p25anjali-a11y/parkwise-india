@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useT } from "./I18n";
 
 declare global {
   interface Window {
@@ -22,6 +23,7 @@ function loadCheckout(): Promise<void> {
 }
 
 export function ReserveFlow({ quoteId }: { quoteId: string }) {
+  const { t } = useT();
   const [hold, setHold] = useState<Hold | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [mock, setMock] = useState(true);
@@ -71,11 +73,11 @@ export function ReserveFlow({ quoteId }: { quoteId: string }) {
     }).open();
   }
 
-  if (!hold) return <div><button onClick={reserve}>Reserve this price</button>{msg && <p role="alert">{msg}</p>}</div>;
+  if (!hold) return <div><button onClick={reserve} className="btn green block">{t("reserve")}</button>{msg && <p role="alert" className="err">{msg}</p>}</div>;
   return (
     <div data-testid="hold">
-      {!done && <p>Bay held for {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}. Pay ₹{(hold.totalPaise / 100).toFixed(0)} to confirm.</p>}
-      {!done && left > 0 && <button onClick={pay}>{mock ? "Pay with UPI (MOCK test payment, no money moves)" : "Pay with UPI (Razorpay test mode)"}</button>}
+      {!done && <p><strong>⏱ {t("held")} {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}</strong>. Pay ₹{(hold.totalPaise / 100).toFixed(0)} to confirm.</p>}
+      {!done && left > 0 && <button onClick={pay} className="btn green block">{t("payUpi")}{mock ? " (demo, no money moves)" : " (test mode)"}</button>}
       {!done && left === 0 && <p>Your hold expired. Get a new price to try again.</p>}
       {msg && <p role="status">{msg}</p>}
     </div>
