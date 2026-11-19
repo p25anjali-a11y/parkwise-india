@@ -52,6 +52,9 @@ export default async function Page() {
           );
         })}
       </div>
+      {profile?.role && profile.role !== "driver"
+        ? <Link href={profile.role === "platform_admin" ? "/admin" : "/operator"} className="btn green block" style={{ marginBottom: 12 }}>🏢 {t("openOperator")}</Link>
+        : <div className="card"><h3>🏢 {t("runLotCard")}</h3><p className="muted">{t("runLotSub")}</p><Link href="/become-operator" className="btn green block">{t("joinTitle")}</Link></div>}
       <Link href="/driver/reservations" className="btn blue block" style={{ marginBottom: 12 }}>🎟️ {t("myReservations")}</Link>
       <Link href="/search" className="btn block" style={{ marginBottom: 12 }}>🔎 {t("findTitle")}</Link>
       <div className="card"><div className="muted" style={{ marginBottom: 8 }}>{t("language")}</div><LangSwitch /></div>

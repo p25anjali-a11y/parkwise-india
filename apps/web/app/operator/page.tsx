@@ -37,18 +37,21 @@ export default async function Operator() {
   }))).filter((x): x is NonNullable<typeof x> => x !== null);
   const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
   return (
-    <main style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
-      <h1>Your lots</h1>
-      <p>{user?.email} · <Link href="/operator/lots/new">Add a lot</Link> · <Link href="/operator/integrations">Integrations</Link> · <Link href="/operator/analytics">Analytics</Link></p>
+    <main className="shell">
+      <div className="top"><div className="row"><span style={{ fontSize: 44 }}>🏢</span><div><h1>{t("yourLots")}</h1><p>{user?.email}</p></div></div></div>
+      <div className="lift" style={{ display: "grid", gap: 10, marginBottom: 14 }}>
+        <Link href="/operator/lots/new" className="btn block">➕ {t("addLot")}</Link>
+        <div className="chips"><Link href="/operator/analytics" className="chip">📈 {t("opTabStats")}</Link><Link href="/operator/integrations" className="chip">🔌 {t("opTabFeeds")}</Link><Link href="/driver" className="chip">🚗 {t("switchDriver")}</Link></div>
+      </div>
       {alerts.length > 0 && (
-        <section aria-label="Alerts" data-testid="alerts">
+        <section aria-label="Alerts" data-testid="alerts" className="card">
           <h2>Alerts</h2>
           <ul>{alerts.map((a, i) => <li key={i}><strong>{a.severity}</strong> · <Link href={`/operator/lots/${a.lotId}`}>{a.lotName}</Link>: {a.message}</li>)}</ul>
           <p style={{ fontSize: 12, color: "#a3acd0" }}>Alerts are shown here only; email and push notifications are not built yet.</p>
         </section>
       )}
       {forecasts.length > 0 && (
-        <section aria-label="Revenue forecast" data-testid="revenue-forecast">
+        <section aria-label="Revenue forecast" data-testid="revenue-forecast" className="card">
           <h2>💰 {t("revenueForecast")}</h2>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead><tr><th align="left">Lot</th><th align="right">{t("expected")}</th></tr></thead>
@@ -57,8 +60,8 @@ export default async function Operator() {
           <p style={{ fontSize: 12, color: "#a3acd0" }}>{t("revenueNote")}</p>
         </section>
       )}
-      {rows.length === 0 ? <p>No lots yet. Add one to get started.</p> : <LiveLots lots={rows} />}
-      <form action="/auth/signout" method="post"><button type="submit">Sign out</button></form>
+      {rows.length === 0 ? <div className="card">No lots yet. Add one to get started.</div> : <LiveLots lots={rows} />}
+      <form action="/auth/signout" method="post"><button type="submit" className="btn ghost block">{t("signOut")}</button></form>
     </main>
   );
 }

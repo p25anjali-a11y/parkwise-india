@@ -27,6 +27,14 @@ export default async function Home() {
         <Link href="/search" className="btn blue block">{t("findParking")}</Link>
         <p style={{ textAlign: "center", marginBottom: 0 }}><Link href="/login">{t("signIn")}</Link></p>
       </div>
+      <h2 style={{ margin: "8px 0 10px" }}>{t("howTitle")}</h2>
+      {[["🔎", "how1", "how1s", "var(--blue)"], ["💸", "how2", "how2s", "var(--yellow)"], ["🎫", "how3", "how3s", "var(--green)"]].map(([ico, a, b, c]) => (
+        <div key={a} className="card" style={{ display: "flex", gap: 14, alignItems: "center", borderLeft: `6px solid ${c}` }}>
+          <span style={{ fontSize: 38 }}>{ico}</span>
+          <div><h3 style={{ marginBottom: 2 }}>{t(a!)}</h3><div className="muted">{t(b!)}</div></div>
+        </div>
+      ))}
+      <Link href="/login" className="btn ghost block" style={{ marginTop: 6 }}>🏢 {t("iRunLot")}</Link>
     </main>
   );
 }
