@@ -11,3 +11,4 @@ __pycache__
 coverage
 test-results/
 playwright-report/
+apps/web/public/maplibre/

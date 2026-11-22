@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 import { LangSwitch, useT } from "../../components/I18n";
 import { Mascot } from "../../components/Mascot";
@@ -15,6 +15,7 @@ export default function Login() {
   const [orgCity, setOrgCity] = useState("Mumbai");
   const [mode, setMode] = useState<"in" | "up">("in");
   const [msg, setMsg] = useState("");
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "up") setMode("up"); }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

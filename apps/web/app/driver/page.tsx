@@ -7,6 +7,7 @@ import { Mascot } from "../../components/Mascot";
 import { AddCar } from "../../components/AddCar";
 import { RemoveButton } from "../../components/RemoveButton";
 import { loadSeries } from "../../lib/lot-series";
+import { ClaimReferral } from "../../components/ClaimReferral";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function Page() {
       <div className="top">
         <div className="row"><Mascot size={64} /><div><h1>{t("welcome")}</h1><p>{t("signedInAs")} {user?.email} ({profile?.role ?? "driver"})</p></div></div>
       </div>
+      <ClaimReferral />
       {(meta.car_model || meta.car_plate) && (
         <div className="card lift"><div className="muted">{t("yourCar")}</div><h3 style={{ marginBottom: 0 }}>{meta.car_model} {meta.car_plate && <span className="pill demo">{meta.car_plate}</span>}</h3></div>
       )}
@@ -45,7 +47,7 @@ export default async function Page() {
         <AddCar />
       </div>
       <div className="card" data-testid="my-waitlist">
-        <h2>⏳ {t("myWaitlist")}</h2>
+        <h2>{t("myWaitlist")}</h2>
         {waits.length === 0 && <p className="muted">{t("noWaitlist")}</p>}
         {waits.map((w) => (
           <div className="rowb" key={w.id} style={{ marginBottom: 8 }}>
@@ -71,6 +73,7 @@ export default async function Page() {
         ? <Link href={profile.role === "platform_admin" ? "/admin" : "/operator"} className="btn green block" style={{ marginBottom: 12 }}>{t("openOperator")}</Link>
         : <div className="card"><h3>{t("runLotCard")}</h3><p className="muted">{t("runLotSub")}</p><Link href="/become-operator" className="btn green block">{t("joinTitle")}</Link></div>}
       <Link href="/driver/reservations" className="btn blue block" style={{ marginBottom: 12 }}>{t("myReservations")}</Link>
+      <Link href="/rewards" className="btn ghost block" style={{ marginBottom: 12 }}>{t("rewardsTitle")}</Link>
       <Link href="/search" className="btn block" style={{ marginBottom: 12 }}>{t("findTitle")}</Link>
       <div className="card"><div className="muted" style={{ marginBottom: 8 }}>{t("language")}</div><LangSwitch /></div>
       <form action="/auth/signout" method="post"><button type="submit" className="btn ghost block">{t("signOut")}</button></form>
