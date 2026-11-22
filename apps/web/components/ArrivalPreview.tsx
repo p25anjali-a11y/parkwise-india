@@ -49,6 +49,7 @@ export function ArrivalPreview({ lotId, me, onLocate }: { lotId: string; me: { l
       </div>
       {av && av.available && hi > 0 && <p style={{ margin: "4px 0 0" }}>{t("spacesThen", { lo, hi })}{av.simulated ? <> <span className="pill demo">{t("simulatedBadge")}</span></> : null}</p>}
       <Link href={`/trip/${lotId}`} className="btn blue block" style={{ minHeight: 44, marginTop: 8 }}>{ICON.nav}&nbsp;{t("startNav")}</Link>
+      <Link href={`/lots/${lotId}?auto=1`} className="btn green block" style={{ minHeight: 44, marginTop: 8 }}>{t("autoTitle")}</Link>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { haversineKm } from "../lib/geo";
 import { OSM_STYLE, mapsDirections, toneOf } from "../lib/map-style";
 import { useT } from "./I18n";
 import { ArrivalPreview } from "./ArrivalPreview";
+import { BestForMe } from "./BestForMe";
 import { ICON } from "./icons";
 
 export type ExplorerLot = {
@@ -131,6 +132,7 @@ export function SearchExplorer({ lots, centre, city, cities }: { lots: ExplorerL
         )}
       </section>
       <section className="xlist" aria-label={t("findTitle")}>
+        <BestForMe lots={shown} me={me} onLocate={nearMe} />
         <div className="xfilters">
           <div className="chips" role="group" aria-label={t("cityLabel")}>
             {cities.map((c) => <Link key={c} href={`/search?city=${c}`} className={c === city ? "chip on" : "chip"}>{c}</Link>)}
