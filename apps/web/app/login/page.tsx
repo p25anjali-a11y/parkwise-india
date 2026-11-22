@@ -35,21 +35,7 @@ export default function Login() {
   const [gstin, setGstin] = useState("");
   const [mode, setMode] = useState<"in" | "up">("in");
   const [msg, setMsg] = useState("");
-  const [me, setMe] = useState<{ email: string; home: string; canOperate: boolean } | null>(null);
   useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "up") setMode("up"); }, []);
-  // Already signed in: offer to continue to your own side, or sign out to pick the other one.
-  useEffect(() => {
-    void (async () => {
-      try {
-        const sb = supabaseBrowser();
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user) return;
-        const { data: p } = await sb.from("profiles").select("role").eq("id", user.id).maybeSingle();
-        const role = p?.role as string | undefined;
-        setMe({ email: user.email ?? "", home: role === "platform_admin" ? "/admin" : role === "operator" || role === "operator_admin" ? "/operator" : "/search", canOperate: role === "operator" || role === "operator_admin" });
-      } catch { /* not configured */ }
-    })();
-  }, []);
 
   async function submit(e: React.FormEvent | null, o?: { email: string; password: string; kind: "driver" | "operator" }) {
     e?.preventDefault();
@@ -89,20 +75,6 @@ export default function Login() {
           <h1>{mode === "in" ? t("signIn") : t("createAccount")}</h1>
         </div>
       </div>
-      {me && (
-        <div className="card" data-testid="continue-card">
-          <p style={{ marginTop: 0 }}>{t("signedInAsEmail", { email: me.email })}</p>
-          <div className="row" style={{ gap: 8 }}>
-            {me.canOperate ? (
-              <>
-                <a href="/operator" className="btn blue" style={{ minHeight: 44 }}>{t("opConsole")}</a>
-                <a href="/search" className="btn" style={{ minHeight: 44 }}>{t("switchDriver")}</a>
-              </>
-            ) : <a href={me.home} className="btn blue" style={{ minHeight: 44 }}>{t("continueBtn")}</a>}
-            <form action="/auth/signout" method="post" style={{ margin: 0 }}><button type="submit" className="chip" style={{ minHeight: 44 }}>{t("signOut")}</button></form>
-          </div>
-        </div>
-      )}
       <form onSubmit={(e) => void submit(e)} className="card lift">
         {(
           <div className="chips" style={{ marginBottom: 12 }} role="group" aria-label="Account type">
