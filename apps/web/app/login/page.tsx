@@ -4,23 +4,7 @@ import { supabaseBrowser } from "../../lib/supabase/browser";
 import { LangSwitch, useT } from "../../components/I18n";
 import { Mascot } from "../../components/Mascot";
 import { PasswordInput } from "../../components/PasswordInput";
-import { gstinCheckChar, isValidGstin, normaliseGstin } from "../../lib/gstin";
-
-/** Demo shortcuts (fake data only). Hide them by setting NEXT_PUBLIC_DEMO_LOGINS=off at build time. */
-const DEMO_LOGINS = process.env.NEXT_PUBLIC_DEMO_LOGINS !== "off";
-const DEMO_PASSWORD = "ParkDemo#2026";
-const DEMOS = [
-  { email: "mumbai.operator@parkwise.example", kind: "operator" as const, key: "demoMumbai", who: "mumbai" },
-  { email: "ahmedabad.operator@parkwise.example", kind: "operator" as const, key: "demoAhmedabad", who: "ahmedabad" },
-  { email: "driver@parkwise.example", kind: "driver" as const, key: "demoDriver", who: "driver" },
-];
-
-/** A made-up but well-formed GSTIN (valid checksum), different each time, for demo sign-ups. Belongs to no business. */
-function fakeGstin(): string {
-  const L = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
-  const first14 = `27AAAC${L()}${String(1000 + Math.floor(Math.random() * 9000))}${L()}1Z`;
-  return first14 + gstinCheckChar(first14);
-}
+import { isValidGstin, normaliseGstin } from "../../lib/gstin";
 
 export default function Login() {
   const { t } = useT();
@@ -36,18 +20,18 @@ export default function Login() {
   const [msg, setMsg] = useState("");
   useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "up") setMode("up"); }, []);
 
-  /** Demo shortcut: the server makes sure the demo account exists, then we sign in with it as usual. */
-  async function demo(d: (typeof DEMOS)[number]) {
+  /** Guest: a private anonymous session (Supabase anonymous sign-in) with an ordinary driver profile. Needs "Allow anonymous sign-ins" on in Supabase Auth. */
+  async function guest() {
     setMsg("");
-    setEmail(d.email); setPassword(DEMO_PASSWORD); setKind(d.kind);
-    const r = await fetch("/api/demo-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ who: d.who }) }).catch(() => null);
-    if (!r || !r.ok) { const e = r ? ((await r.json().catch(() => ({}))) as { error?: string }) : {}; return setMsg(e.error ?? "Demo login is not available right now."); }
-    await submit(null, { email: d.email, password: DEMO_PASSWORD, kind: d.kind });
+    const sb = supabaseBrowser();
+    const { error } = await sb.auth.signInAnonymously({ options: { data: { display_name: "Guest", account_type: "driver" } } });
+    if (error) return setMsg(/anonymous/i.test(error.message) ? t("guestOff") : error.message);
+    window.location.href = "/search";
   }
 
-  async function submit(e: React.FormEvent | null, o?: { email: string; password: string; kind: "driver" | "operator" }) {
-    e?.preventDefault();
-    const em = o?.email ?? email, pw = o?.password ?? password, kd = o?.kind ?? kind, md = o ? "in" : mode;
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const em = email, pw = password, kd = kind, md = mode;
     setMsg("");
     if (md === "up" && kd === "operator" && !isValidGstin(gstin)) return setMsg(t("gstinBad"));
     const sb = supabaseBrowser();
@@ -98,7 +82,6 @@ export default function Login() {
             <label className="f">{t("businessCity")}<select value={orgCity} onChange={(e) => setOrgCity(e.target.value)}><option>Mumbai</option><option>Ahmedabad</option></select></label>
             <label className="f">{t("gstinLabel")}<input value={gstin} onChange={(e) => setGstin(e.target.value)} required minLength={15} maxLength={17} autoCapitalize="characters" aria-describedby="gstin-help" /></label>
             <p id="gstin-help" className="muted" style={{ marginTop: -6 }}>{t("gstinHelp")}</p>
-            {DEMO_LOGINS && <button type="button" className="chip" style={{ minHeight: 44, marginBottom: 12 }} onClick={() => { setOrgName("Demo Mall Parking"); setGstin(fakeGstin()); }}>{t("demoFill")}</button>}
           </>
         )}
         {mode === "up" && kind === "driver" && (
@@ -116,12 +99,10 @@ export default function Login() {
           </button>
         </p>
       </form>
-      {DEMO_LOGINS && mode === "in" && (
-        <div className="card" data-testid="demo-logins">
-          <h2 style={{ marginBottom: 4 }}>{t("demoTitle")}</h2>
-          <div className="chips">
-            {DEMOS.map((d) => <button key={d.email} type="button" className="chip" style={{ minHeight: 44 }} onClick={() => void demo(d)}>{t(d.key)}</button>)}
-          </div>
+      {mode === "in" && (
+        <div className="card" data-testid="guest-entry">
+          <button type="button" className="btn block" style={{ minHeight: 44 }} onClick={() => void guest()}>{t("guestBtn")}</button>
+          <p className="muted" style={{ marginTop: 8, marginBottom: 0, textAlign: "center" }}>{t("guestNote")}</p>
         </div>
       )}
       <div className="card"><div className="muted" style={{ marginBottom: 8 }}>{t("language")}</div><LangSwitch /></div>

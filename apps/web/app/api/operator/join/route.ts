@@ -24,6 +24,7 @@ export async function POST(req: Request) {
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  if (user.is_anonymous) return NextResponse.json({ error: "Guests cannot register a business. Create an account first." }, { status: 403 });
   const admin = supabaseAdmin();
   if (!admin) return NextResponse.json({ error: "Server is not configured for operator sign-up." }, { status: 503 });
   const { data: profile } = await admin.from("profiles").select("role,org_id").eq("id", user.id).maybeSingle();
