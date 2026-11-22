@@ -1,7 +1,7 @@
 import { feedHealth } from "@parkwise/providers";
 import { hasSupabaseEnv } from "../../lib/env";
 import { supabaseServer } from "../../lib/supabase/server";
-import { setLotStatus } from "./actions";
+import { setLotStatus, verifyOrganization } from "./actions";
 import { ImportForm } from "./ImportForm";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +14,19 @@ export default async function Admin() {
     sb.from("data_source_health").select("source,kind,is_mock,last_success_at,last_error_at,last_error,success_count,error_count"),
     sb.from("audit_log").select("created_at,action,entity_id,reason").order("created_at", { ascending: false }).limit(15),
   ]);
+  const { data: unverified } = await sb.from("organizations").select("id,name,city,gstin,created_at").is("verified_at", null).eq("is_synthetic", false).order("created_at");
   const pending = (lots.data ?? []).filter((l) => l.status === "pending_approval");
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <h1>Admin</h1>
+      <h2>Operators awaiting verification ({(unverified ?? []).length})</h2>
+      <p>Check each GSTIN on the GST portal (gst.gov.in, Search Taxpayer) against the business name, then verify. Unverified operators cannot submit lots.</p>
+      {(unverified ?? []).length === 0 && <p>None.</p>}
+      {(unverified ?? []).map((o) => (
+        <form key={o.id} action={verifyOrganization.bind(null, o.id)} style={{ margin: "8px 0" }}>
+          {o.name} ({o.city}) · GSTIN {o.gstin ?? "not given"} <button type="submit" disabled={!o.gstin}>Verify</button>
+        </form>
+      ))}
       <h2>Lots awaiting approval ({pending.length})</h2>
       {pending.length === 0 && <p>None.</p>}
       {pending.map((l) => (

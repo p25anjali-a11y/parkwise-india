@@ -32,6 +32,10 @@ export async function saveRules(lotId: string, _prev: { error?: string; ok?: boo
 
 export async function submitForApproval(lotId: string) {
   const sb = await supabaseServer();
+  // Only a verified business may submit a lot (migration 0011). If the column is not there yet, this check is skipped.
+  const { data: lot } = await sb.from("lots").select("org_id").eq("id", lotId).maybeSingle();
+  const { data: org, error: oe } = lot ? await sb.from("organizations").select("verified_at").eq("id", lot.org_id).maybeSingle() : { data: null, error: null };
+  if (!oe && org && !org.verified_at) return;
   await sb.from("lots").update({ status: "pending_approval" }).eq("id", lotId).eq("status", "draft");
   revalidatePath(`/operator/lots/${lotId}`);
 }

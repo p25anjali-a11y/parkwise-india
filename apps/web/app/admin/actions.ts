@@ -11,6 +11,16 @@ async function requireAdmin() {
   return me?.role === "platform_admin" ? { sb, user } : null;
 }
 
+/** Marks an operator business as verified after the admin has checked its GSTIN on the GST portal. Writes an audit row. */
+export async function verifyOrganization(orgId: string, _form: FormData) {
+  const ctx = await requireAdmin();
+  if (!ctx) return;
+  const { error } = await ctx.sb.from("organizations").update({ verified_at: new Date().toISOString(), verified_by: ctx.user.id }).eq("id", orgId).is("verified_at", null);
+  if (error) return;
+  await supabaseAdmin()?.from("audit_log").insert({ actor_id: ctx.user.id, org_id: orgId, action: "org.verify", entity: "organization", entity_id: orgId, before: { verified: false }, after: { verified: true }, reason: "GSTIN checked by platform admin" });
+  revalidatePath("/admin");
+}
+
 const NEXT: Record<string, "approved" | "suspended" | "draft"> = { approve: "approved", suspend: "suspended", reopen: "draft" };
 
 /** Changes a lot's status as platform admin (RLS and the guard trigger allow only admins) and writes an immutable audit row. */
