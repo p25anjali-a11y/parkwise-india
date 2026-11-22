@@ -13,10 +13,11 @@ test("first page is the sign-in with a driver / operator choice", async ({ page 
   await expect(page.getByRole("button", { name: "I run a parking place" })).toBeVisible();
 });
 
-test("sign-in offers forgot password and demo logins", async ({ page }) => {
+test("sign-in offers forgot password and guest entry, no demo logins", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByTestId("forgot-link")).toBeVisible();
-  await expect(page.getByTestId("demo-logins")).toContainText("Mumbai mall operator");
+  await expect(page.getByTestId("guest-entry")).toContainText("Continue as guest");
+  await expect(page.getByText("Mumbai mall operator")).toHaveCount(0);
   await page.getByTestId("forgot-link").click();
   await expect(page).toHaveURL(/\/auth\/forgot/);
   await expect(page.getByLabel("Email")).toBeVisible();
@@ -153,7 +154,7 @@ test("language can be switched to Hindi and Gujarati", async ({ page }) => {
   await expect(page.getByText("જગ્યા શોધો. ભાવ પહેલાં જાણો.")).toBeVisible();
 });
 
-test("demo login endpoint refuses unknown accounts", async ({ request }) => {
-  const r = await request.post("/api/demo-login", { data: { who: "someone-else" } });
-  expect([400, 503]).toContain(r.status());
+test("old demo login endpoint is gone", async ({ request }) => {
+  const r = await request.post("/api/demo-login", { data: { who: "driver" } });
+  expect([404, 405]).toContain(r.status());
 });

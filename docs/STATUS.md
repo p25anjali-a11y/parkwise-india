@@ -1,5 +1,7 @@
 # Status: what is real, what is mocked, what is missing
 
+**Update, 23 Nov 2026.** The demo login buttons and the `/api/demo-login` endpoint are removed. The sign-in page now has **Continue as guest**: a private Supabase anonymous session with an ordinary driver profile (driver side only; guests cannot register a business). It needs **Authentication → Sign In / Providers → Allow anonymous sign-ins** switched on in Supabase; until then the button shows a "not switched on yet" message. Guest data is lost when the guest signs out. `seed/demo_accounts.sql` still works for anyone who wants the demo operator accounts, signing in normally.
+
 **Update, 22 Nov 2026 (evening).** Sign-in is the first page (driver or operator). Operators give a GSTIN and an admin verifies them (migration 0011, not yet applied). Operator screens only show the operator's own organisation. Demo accounts: `seed/demo_accounts.sql`.
 
 **Update, 22 Nov 2026.** Interface redesign: map-first Find parking, desktop nav, live trip screen, rewards and referrals (migration 0010, not yet applied to Supabase), operator overview KPIs, revenue page with CSV export, reservations list. Fixed the MapLibre worker URL (maps could not draw tiles in production builds). See `docs/USER_JOURNEY.md`.

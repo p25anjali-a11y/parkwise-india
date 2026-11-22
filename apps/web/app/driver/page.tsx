@@ -32,7 +32,7 @@ export default async function Page() {
   return (
     <main className="shell">
       <div className="top">
-        <div className="row"><Mascot size={64} /><div><h1>{t("welcome")}</h1><p>{t("signedInAs")} {user?.email} ({profile?.role ?? "driver"})</p></div></div>
+        <div className="row"><Mascot size={64} /><div><h1>{t("welcome")}</h1><p>{t("signedInAs")} {user?.is_anonymous ? t("guestName") : user?.email} ({profile?.role ?? "driver"})</p></div></div>
       </div>
       <ClaimReferral />
       {(meta.car_model || meta.car_plate) && (
