@@ -4,8 +4,8 @@ export type Role = "driver" | "operator" | "operator_admin" | "platform_admin";
 export function canAccess(role: Role | null, area: "driver" | "find" | "operator" | "admin"): boolean {
   if (!role) return false;
   if (area === "driver") return true;
-  // Find parking, lot pages, trips and rewards are for drivers only.
-  if (area === "find") return role === "driver";
+  // Find parking, lot pages, trips and rewards: every account has a driver view of its own, except platform admins.
+  if (area === "find") return role === "driver" || role === "operator" || role === "operator_admin";
   if (area === "operator") return role === "operator" || role === "operator_admin" || role === "platform_admin";
   return role === "platform_admin";
 }

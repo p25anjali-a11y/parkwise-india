@@ -11,7 +11,7 @@ select set_config('app.allow_synthetic', 'off', false);
 \i :seeddir/real_places.sql
 \i :seeddir/demo_accounts.sql
 \i :seeddir/demo_accounts.sql
-select test_helpers.expect_eq((select count(*) from auth.users where email like '%@parkwise.example'), 3, 'demo: three users, none duplicated by a second run');
+select test_helpers.expect_eq((select count(*) from auth.users where email like '%@parkwise.example' or email = 'p25anjali@iima.ac.in'), 4, 'demo: three users, none duplicated by a second run');
 select test_helpers.expect_eq((select count(*) from public.profiles p join auth.users u on u.id = p.id where u.email like '%.operator@parkwise.example' and p.role = 'operator_admin' and p.org_id is not null), 2, 'demo: two operators with an organisation');
 select test_helpers.expect_eq((select count(*) from public.profiles p join auth.users u on u.id = p.id where u.email = 'driver@parkwise.example' and p.role = 'driver'), 1, 'demo: the driver stays a driver');
 select test_helpers.expect_eq((select count(*) from public.organizations where gstin in ('27AAACP1234C1Z1', '24AAACA5678D1ZW') and verified_at is not null), 2, 'demo: both businesses are verified');
@@ -19,7 +19,11 @@ select test_helpers.expect_eq((select count(*) from public.lots l join public.or
 select test_helpers.expect_eq((select count(*) from public.lots l join public.organizations o on o.id = l.org_id where o.gstin = '24AAACA5678D1ZW' and l.city = 'Ahmedabad' and l.status = 'approved'), 2, 'demo: the Ahmedabad business owns two approved lots');
 select test_helpers.expect_eq((select count(*) from public.lot_live_state where lot_id in (select l.id from public.lots l join public.organizations o on o.id = l.org_id where o.gstin in ('27AAACP1234C1Z1', '24AAACA5678D1ZW'))), 0, 'demo: no occupancy is stored for the demo businesses');
 select test_helpers.expect_eq((select count(*) from public.reservations where user_id in (select id from auth.users where email like '%@parkwise.example')), 0, 'demo: no bookings or revenue are invented');
+select test_helpers.expect_eq((select count(*) from public.lots l join public.organizations o on o.id = l.org_id where o.gstin = '27AAACI4321D1Z4' and l.status = 'approved'), 4, 'demo: the owner account has two malls and two decks, in both cities');
+select test_helpers.expect_eq((select count(distinct l.city) from public.lots l join public.organizations o on o.id = l.org_id where o.gstin = '27AAACI4321D1Z4'), 2, 'demo: the owner account has lots in Mumbai and Ahmedabad');
+select test_helpers.expect_eq((select count(*) from public.profiles p join auth.users u on u.id = p.id where u.email = 'p25anjali@iima.ac.in' and p.role = 'operator_admin'), 1, 'demo: the owner account is an operator');
 \i :seeddir/remove_demo_accounts.sql
+select test_helpers.expect_eq((select count(*) from public.profiles p join auth.users u on u.id = p.id where u.email = 'p25anjali@iima.ac.in' and p.role = 'driver'), 1, 'remove: the owner account is kept as a plain driver');
 select test_helpers.expect_eq((select count(*) from auth.users where email like '%@parkwise.example'), 0, 'remove: demo users are gone');
-select test_helpers.expect_eq((select count(*) from public.organizations where gstin in ('27AAACP1234C1Z1', '24AAACA5678D1ZW')), 0, 'remove: demo businesses are gone');
+select test_helpers.expect_eq((select count(*) from public.organizations where gstin in ('27AAACP1234C1Z1', '24AAACA5678D1ZW', '27AAACI4321D1Z4')), 0, 'remove: demo businesses are gone');
 \echo DEMO ACCOUNTS ASSERTIONS PASSED

@@ -8,6 +8,14 @@ const N = COLS * ROWS;
 const COLOURS = ["#8fa6e8", "#c9a96a", "#a9b1c4", "#5cc9a0", "#d98b6a", "#b59bd8"];
 // 0 free, 1 parked, 2 just arrived, 3 leaving
 type Bay = 0 | 1 | 2 | 3;
+type GateEvent = { id: number; kind: "in" | "out"; plate: string; at: string };
+
+const LETTERS = "ABCDEFGHJKLMNPRSTUVWXYZ";
+/** A made-up plate, masked in the middle. Never a real vehicle. */
+function fakePlate(state: string): string {
+  const l = () => LETTERS[Math.floor(Math.random() * LETTERS.length)]!;
+  return `${state} ${String(1 + Math.floor(Math.random() * 47)).padStart(2, "0")} ${l()}• ${String(1000 + Math.floor(Math.random() * 9000))}`;
+}
 
 function seeded(initial: number): Bay[] {
   const n = Math.round(initial * N);
@@ -19,12 +27,22 @@ function seeded(initial: number): Bay[] {
  * A top-down picture of the lot with cars coming and going. How full it is follows the lot's occupancy
  * (simulated for demo lots, real for lots with live counts); the individual cars are illustration.
  */
-export function LiveLotSim({ lotId, capacity, initial, simulated }: { lotId: string; capacity: number; initial: number; simulated: boolean }) {
+/**
+ * Operator view. The in/out feed below the picture is SIMULATED and is shown to operators only; drivers see a range instead.
+ */
+export function LiveLotSim({ lotId, capacity, initial, simulated, city = "Mumbai" }: { lotId: string; capacity: number; initial: number; simulated: boolean; city?: string }) {
   const { t } = useT();
   const [bays, setBays] = useState<Bay[]>(() => seeded(initial));
   const [frac, setFrac] = useState(initial);
   const [ins, setIns] = useState(0);
   const [outs, setOuts] = useState(0);
+  const [events, setEvents] = useState<GateEvent[]>([]);
+  const evId = useRef(0);
+  const state = city === "Ahmedabad" ? "GJ" : "MH";
+  const pushEvent = (kind: "in" | "out") => {
+    const at = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    setEvents((cur) => [{ id: ++evId.current, kind, plate: fakePlate(state), at }, ...cur].slice(0, 8));
+  };
   const fracRef = useRef(frac);
   fracRef.current = frac;
 
@@ -57,9 +75,11 @@ export function LiveLotSim({ lotId, capacity, initial, simulated }: { lotId: str
         if (wantIn && free.length) {
           next[free[Math.floor(Math.random() * free.length)]!] = 2;
           setIns((x) => x + 1);
+          pushEvent("in");
         } else if (taken.length) {
           next[taken[Math.floor(Math.random() * taken.length)]!] = 3;
           setOuts((x) => x + 1);
+          pushEvent("out");
         }
         return next;
       });
@@ -94,7 +114,7 @@ export function LiveLotSim({ lotId, capacity, initial, simulated }: { lotId: str
           );
         })}
       </svg>
-      <div className="bar" style={{ marginTop: 10, background: "#181c25" }}>
+      <div className="bar" style={{ marginTop: 10, background: "var(--raise)" }}>
         <div style={{ width: `${pct}%`, background: pct >= 90 ? "#ef6f77" : pct >= 70 ? "#e6b05a" : "#5cc9a0" }} />
       </div>
       <div className="stats">
@@ -103,6 +123,14 @@ export function LiveLotSim({ lotId, capacity, initial, simulated }: { lotId: str
         <div><b>{outs}</b>{t("carsOut")}</div>
       </div>
       {simulated && <p style={{ margin: "10px 0 0", fontSize: 14, opacity: 0.9 }}>{t("liveSub")}</p>}
+      <div className="gatefeed" data-testid="gate-feed">
+        <h3 style={{ margin: 0 }}>{t("gateTitle")}</h3>
+        <p className="muted" style={{ margin: "2px 0 0", fontSize: 13 }}>{t("gateSim")}</p>
+        <ul aria-live="off">
+          {events.length === 0 && <li className="muted">{t("gateEmpty")}</li>}
+          {events.map((e) => <li key={e.id} className={e.kind}><span className="dir">{e.kind === "in" ? t("gateIn") : t("gateOut")}</span><span>{e.plate}</span><span className="muted" style={{ marginLeft: "auto" }}>{e.at}</span></li>)}
+        </ul>
+      </div>
     </div>
   );
 }

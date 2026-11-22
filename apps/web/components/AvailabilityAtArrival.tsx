@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { freeRangeFromBays } from "../lib/availability-range";
 
 type A = { available: false; reason: string } | { available: true; label: string; freeBays: { likely: number; pessimistic: number; optimistic: number }; pFull: number; stale: boolean; coldStart: boolean; modelVersion: string; simulated?: boolean };
 
@@ -15,8 +16,8 @@ export function AvailabilityAtArrival({ lotId, arrivalInMin }: { lotId: string; 
   if (!a) return null;
   if (!a.available) return <p data-testid="availability" className="muted">{a.reason}</p>;
   return (
-    <p data-testid="availability" style={{ background: "#181c25", borderRadius: 14, padding: 12 }}>
-      <strong>{a.label}</strong> when you arrive: about {a.freeBays.likely} bays free (range {a.freeBays.pessimistic}–{a.freeBays.optimistic}).
+    <p data-testid="availability" style={{ background: "var(--raise)", borderRadius: 14, padding: 12 }}>
+      <strong>{a.label}</strong> when you arrive: about {freeRangeFromBays(a.freeBays.pessimistic, a.freeBays.optimistic).join("–")} bays free.
       {a.stale ? " Live count is stale, so this is less certain." : ""}{a.coldStart ? " New lot: limited history." : ""}
       <span className="muted" style={{ display: "block" }}>{a.simulated ? "SIMULATED data for demonstration, not a real forecast." : `Forecast, not a guarantee. Model ${a.modelVersion}, built from this lot's own recorded occupancy.`}</span>
     </p>

@@ -18,13 +18,13 @@ export default async function Page() {
   const { data: { user } } = await sb.auth.getUser();
   const { data: profile } = await sb.from("profiles").select("role").eq("id", user?.id ?? "").maybeSingle();
   const meta = (user?.user_metadata ?? {}) as { car_model?: string; car_plate?: string };
-  const { data: cars } = await sb.from("vehicles").select("id,label,plate_last4").order("created_at");
-  const { data: alertRows } = await sb.from("price_alerts").select("id,lot_id,target_rate_paise,lots(name)").order("created_at").limit(10);
+  const { data: cars } = await sb.from("vehicles").select("id,label,plate_last4").eq("user_id", user?.id ?? "").order("created_at");
+  const { data: alertRows } = await sb.from("price_alerts").select("id,lot_id,target_rate_paise,lots(name)").eq("user_id", user?.id ?? "").order("created_at").limit(10);
   const alerts = await Promise.all((alertRows ?? []).map(async (a) => {
     const now = (await loadSeries(sb, a.lot_id, 1))?.series[0]?.ratePerHour ?? null;
     return { id: a.id, name: (a.lots as unknown as { name: string } | null)?.name ?? "Lot", target: a.target_rate_paise, now };
   }));
-  const { data: wlRows } = await sb.from("waitlist").select("id,lot_id,lots(name)").order("created_at").limit(10);
+  const { data: wlRows } = await sb.from("waitlist").select("id,lot_id,lots(name)").eq("user_id", user?.id ?? "").order("created_at").limit(10);
   const waits = await Promise.all((wlRows ?? []).map(async (w) => {
     const occ = (await loadSeries(sb, w.lot_id, 1))?.series[0]?.occupancy ?? null;
     return { id: w.id, name: (w.lots as unknown as { name: string } | null)?.name ?? "Lot", lotId: w.lot_id, free: occ !== null && occ < 0.8 };

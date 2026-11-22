@@ -10,7 +10,9 @@ export const dynamic = "force-dynamic";
 export default async function Reservations() {
   const { t } = await getLang();
   const sb = await supabaseServer();
-  const { data } = await sb.from("reservations").select("id,status,arrival_at,duration_min,total_paise,hold_expires_at,lots(name)").order("created_at", { ascending: false }).limit(50);
+  const { data: { user } } = await sb.auth.getUser();
+  // An operator can read every booking at their lots; this is the DRIVER view, so only the person's own trips.
+  const { data } = await sb.from("reservations").select("id,status,arrival_at,duration_min,total_paise,hold_expires_at,lots(name)").eq("user_id", user?.id ?? "").order("created_at", { ascending: false }).limit(50);
   const ids = (data ?? []).map((r) => r.id);
   const { data: pins } = await sb.from("car_pins").select("reservation_id,note,lat,lng").in("reservation_id", ids);
   const { data: valets } = await sb.from("valet_requests").select("id,reservation_id,status").in("reservation_id", ids);
