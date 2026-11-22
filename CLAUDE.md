@@ -16,7 +16,7 @@ Read these first, in order: `docs/STATUS.md` (what is real, mocked, missing), `d
 4. **Database.** Every table has RLS. Write functions are SECURITY INVOKER and granted to `service_role` only. Roles are changed only through `/api/operator/join` (own profile, service role) or by hand in SQL. New migrations go in `packages/db/migrations/` with the next number (latest: 0011); add SQL tests in `packages/db/tests/` and list them in `scripts/test.sh`.
 5. **No card data.** Never collect or store card numbers. Payments go through Razorpay's hosted screen. Plates are stored as a hash plus the last four characters.
 6. **Secrets.** Never commit keys or `.env*`. Env var names: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `FEED_ENCRYPTION_KEY`, optional `TOMTOM_API_KEY`, `GOOGLE_MAPS_API_KEY`, Razorpay keys. Values live in Vercel and GitHub secrets. GitHub secrets for the hourly jobs: `APP_URL`, `CRON_SECRET`.
-7. **UI.** Dark only, gold accent, line icons, no emoji. Every new string goes in all four languages (`apps/web/lib/i18n.ts`; the redesign strings are in `i18n-redesign.ts`). Maps need `scripts/copy-maplibre-worker.mjs` (runs in `dev` and `build`); see `lib/maplibre.ts`. Keep tap targets at least 44px.
+7. **UI.** Dark by default with a light theme toggle (`ThemeToggle`, CSS variables in `globals.css`), gold accent, line icons, no emoji. Every new string goes in all four languages (`apps/web/lib/i18n.ts`; the redesign strings are in `i18n-redesign.ts`). Maps need `scripts/copy-maplibre-worker.mjs` (runs in `dev` and `build`); see `lib/maplibre.ts`. Keep tap targets at least 44px.
 8. **Workflow.** Branch, small PR into `main`, wait for CI (verify, db, e2e), then squash-merge. Merging to `main` deploys to production on Vercel. Coordinate with teammates before touching the same files, and rebase often.
 
 ## Features built (see STATUS.md for caveats)
@@ -27,6 +27,8 @@ Real lots and live occupancy (none exist yet), live-key behaviour of TomTom / Go
 
 ## Demo data scripts (run in the Supabase SQL editor)
 `packages/db/seed/real_places.sql` (18 real places, simulated counts), `demo_ev_bays.sql`, `remove_simulated_lots.sql` (suspend or delete demo lots once real ones arrive), `demo_accounts.sql` (two verified demo mall operators, Mumbai and Ahmedabad, plus a demo driver; password in the file's header; `remove_demo_accounts.sql` undoes it).
+
+## Drivers see availability as a range only (`lib/availability-range.ts`); the simulated gate feed (cars in and out, `LiveLotSim`) is for operators only. Driver quotes read price rules server-side with the service role (`lib/public-rules.ts`) because RLS hides them from drivers. Operators have their own driver view too (Find parking, rewards), reachable from the operator console.
 
 ## Operators prove who they are
 Operator sign-up needs a GSTIN (format and checksum checked in `lib/gstin.ts`; the number is only proven to belong to the business when a platform admin checks it on the GST portal and verifies the organisation in /admin, migration 0011). Unverified operators can build lots but cannot submit them. Operator screens always filter by the operator's own `org_id` (`lib/operator-scope.ts`), because approved lots are publicly readable under RLS.

@@ -8,6 +8,7 @@ import { resolveOccupancy } from "../../../lib/resolve-occupancy";
 import { liveTrafficRows, liveWeatherRows, rainProbAt } from "../../../lib/live-signals";
 import { eventUpliftFor, signalsFor, withEventUplift } from "../../../lib/quote-inputs";
 import { supabaseAdmin } from "../../../lib/supabase/admin";
+import { loadRulesFor } from "../../../lib/public-rules";
 import { supabaseServer } from "../../../lib/supabase/server";
 
 const q = z.object({
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
   const [{ data: zone }, { data: live }, { data: rr }, { data: events }, { data: sig }, { data: fc }] = await Promise.all([
     sb.from("zones").select("id,slot_types!inner(code)").eq("lot_id", lotId).eq("slot_types.code", "car").limit(1).maybeSingle(),
     sb.from("lot_live_state").select("occupied,capacity,updated_at,source,is_synthetic").eq("lot_id", lotId).maybeSingle(),
-    sb.from("price_rules").select("rules").eq("lot_id", lotId).eq("active", true).is("zone_id", null).maybeSingle(),
+    loadRulesFor(sb, [lotId]).then((m) => ({ data: m.has(lotId) ? { rules: m.get(lotId) } : null })),
     sb.from("events").select("starts_at,ends_at,impact").eq("lot_id", lotId),
     sb.from("demand_signals").select("kind,value,valid_at,created_at,is_mock,source").eq("city", lot.city).or(`lot_id.is.null,lot_id.eq.${lotId}`),
     sb.from("forecasts").select("target_time,p10,p50,p90,p_full,model_version,stale,cold_start,generated_at").eq("lot_id", lotId)

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { quote, DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
 import { supabaseServer } from "../../../../lib/supabase/server";
 import { operatorScope } from "../../../../lib/operator-scope";
+import { LiveLotSim } from "../../../../components/LiveLotSim";
+import { simulatedOccupancy } from "../../../../lib/simulated-occupancy";
 import { RulesForm } from "./RulesForm";
 import { submitForApproval } from "./actions";
 
@@ -13,7 +15,7 @@ export default async function LotPage({ params }: { params: Promise<{ id: string
   const sb = await supabaseServer();
   const scope = await operatorScope(sb);
   if (!scope) notFound();
-  let lq = sb.from("lots").select("id,name,city,address,category,status").eq("id", id);
+  let lq = sb.from("lots").select("id,name,city,address,category,status,is_synthetic").eq("id", id);
   if (scope.orgId) lq = lq.eq("org_id", scope.orgId);
   const { data: lot } = await lq.maybeSingle();
   if (!lot) notFound();
@@ -31,6 +33,9 @@ export default async function LotPage({ params }: { params: Promise<{ id: string
       <p>{lot.city} · {lot.category} · <span className="pill grey">{lot.status}</span></p></div>
       {lot.status === "draft" && (
         <form action={submitForApproval.bind(null, id)}><button type="submit" className="btn block" style={{ marginBottom: 12 }}>Submit for approval</button></form>
+      )}
+      {lot.is_synthetic && (zones ?? []).reduce((n, z) => n + z.capacity, 0) > 0 && (
+        <LiveLotSim lotId={id} capacity={(zones ?? []).reduce((n, z) => n + z.capacity, 0)} initial={simulatedOccupancy({ lotId: id, category: lot.category, at: new Date() })} simulated city={lot.city} />
       )}
       <div className="card"><h2>Zones</h2>
       {(zones ?? []).map((z) => <div className="rowb" key={z.id} style={{ marginBottom: 8 }}><strong>{z.name}</strong><span className="muted">{z.capacity} bays · {Math.round(Number(z.reservable_pct) * 100)}% reservable · {z.reserved_count} sold</span></div>)}</div>

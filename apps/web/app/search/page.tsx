@@ -6,6 +6,7 @@ import { SearchExplorer } from "../../components/SearchExplorer";
 import { hasSupabaseEnv } from "../../lib/env";
 import { availabilityNow, CITY_CENTRES, sortByDistance } from "../../lib/geo";
 import { supabaseServer } from "../../lib/supabase/server";
+import { loadRulesFor } from "../../lib/public-rules";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,11 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
   const { data: lots } = await sb.from("lots").select("id,name,city,category,lat,lng,is_synthetic").eq("city", city).eq("status", "approved");
   const ids = (lots ?? []).map((l) => l.id);
   const { data: live } = await sb.from("lot_live_state").select("lot_id,occupied,capacity,updated_at,source,is_synthetic").in("lot_id", ids);
-  const { data: rules } = await sb.from("price_rules").select("lot_id,rules").in("lot_id", ids).eq("active", true).is("zone_id", null);
+  const rulesRaw = await loadRulesFor(sb, ids);
   const { data: evZones } = await sb.from("zones").select("lot_id,slot_types!inner(code)").in("lot_id", ids).eq("slot_types.code", "ev");
   const evSet = new Set((evZones ?? []).map((z) => z.lot_id));
   const liveBy = new Map((live ?? []).map((l) => [l.lot_id, l]));
-  const rulesBy = new Map((rules ?? []).map((r) => [r.lot_id, { ...DEFAULT_RULES, ...(r.rules as Partial<PricingRules>) } as PricingRules]));
+  const rulesBy = new Map([...rulesRaw].map(([id, r]) => [id, { ...DEFAULT_RULES, ...(r as Partial<PricingRules>) } as PricingRules]));
   const now = new Date();
 
   const wx = await liveWeatherRows(city, now);

@@ -4,7 +4,7 @@ import { supabaseServer } from "../../lib/supabase/server";
 import { getLang } from "../../lib/lang";
 import { resolveOccupancy } from "../../lib/resolve-occupancy";
 import { liveWeatherRows, rainProbAt } from "../../lib/live-signals";
-import { LiveLotSim } from "../../components/LiveLotSim";
+import { AvailabilityRange } from "../../components/AvailabilityRange";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function Live({ searchParams }: { searchParams: Promise<{ l
     const now = new Date();
     const wx = await liveWeatherRows(chosen.city, now);
     const occ = resolveOccupancy({ lot: chosen, forecast: null, live: live ?? null, arrival: now, now, rainProb: rainProbAt(wx, now) });
-    if (occ.value !== null && capacity > 0) sim = <LiveLotSim key={chosen.id} lotId={chosen.id} capacity={capacity} initial={occ.value} simulated={occ.simulated} />;
+    if (occ.value !== null && capacity > 0) sim = <div className="card lift"><AvailabilityRange key={chosen.id} occupancy={occ.value} capacity={capacity} simulated={occ.simulated} /></div>;
   }
   return (
     <main className="shell">

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { liveTrafficRows, liveWeatherRows, rainProbAt } from "./live-signals";
+import { loadRulesFor } from "./public-rules";
 import { priceSeries, type SeriesPoint } from "./price-series";
 
 /** Loads one lot's inputs and returns its hourly price series plus its capacity. Null when the lot is not visible. */
@@ -9,7 +10,7 @@ export async function loadSeries(sb: SupabaseClient, lotId: string, hours: numbe
   const now = new Date();
   const [{ data: live }, { data: rr }, { data: events }, { data: zones }, wx, tr] = await Promise.all([
     sb.from("lot_live_state").select("occupied,capacity,updated_at,source,is_synthetic").eq("lot_id", lotId).maybeSingle(),
-    sb.from("price_rules").select("rules").eq("lot_id", lotId).eq("active", true).is("zone_id", null).maybeSingle(),
+    loadRulesFor(sb, [lotId]).then((m) => ({ data: m.has(lotId) ? { rules: m.get(lotId) } : null })),
     sb.from("events").select("starts_at,ends_at,impact").eq("lot_id", lotId),
     sb.from("zones").select("capacity").eq("lot_id", lotId),
     liveWeatherRows(lot.city, now),

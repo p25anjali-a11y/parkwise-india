@@ -13,6 +13,24 @@ test("first page is the sign-in with a driver / operator choice", async ({ page 
   await expect(page.getByRole("button", { name: "I run a parking place" })).toBeVisible();
 });
 
+test("sign-in offers forgot password and demo logins", async ({ page }) => {
+  await page.goto("/login");
+  await expect(page.getByTestId("forgot-link")).toBeVisible();
+  await expect(page.getByTestId("demo-logins")).toContainText("Anjali");
+  await page.getByTestId("forgot-link").click();
+  await expect(page).toHaveURL(/\/auth\/forgot/);
+  await expect(page.getByLabel("Email")).toBeVisible();
+});
+
+test("theme can be switched to light and is remembered", async ({ page }) => {
+  await page.goto("/login");
+  const btn = page.getByTestId("theme-float");
+  await btn.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
 test("operator sign-up asks for a GSTIN and rejects a bad one", async ({ page }) => {
   await page.goto("/login?mode=up");
   await page.getByRole("button", { name: "I run a parking place" }).click();

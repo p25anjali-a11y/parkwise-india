@@ -3,6 +3,8 @@ import { BarChart, HourChart } from "../../../components/charts";
 import { ICON } from "../../../components/icons";
 import { hourlyProfile, pricingSummary, reservationSummary } from "../../../lib/analytics";
 import { dailyGross } from "../../../lib/csv-export";
+import { simulatedDailyGross } from "../../../lib/simulated-revenue";
+import { DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
 import { getLang } from "../../../lib/lang";
 import { rupees } from "../../../lib/referral";
 import { supabaseServer } from "../../../lib/supabase/server";
@@ -17,7 +19,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const sb = await supabaseServer();
   const scope = await operatorScope(sb);
   if (!scope) return <main className="shell"><div className="card">Sign in with an operator account to see this page.</div></main>;
-  const lots = (await scopedLots(sb, scope, "id,name")) as Array<{ id: string; name: string }>;
+  const lots = (await scopedLots(sb, scope, "id,name,category,is_synthetic,zones(capacity)")) as Array<{ id: string; name: string; category: string; is_synthetic: boolean; zones: { capacity: number }[] | null }>;
   if (lots.length === 0) return <main className="shell"><div className="top"><h1>{t("opRevenue")}</h1></div><div className="card">{t("noLotsYet")}</div></main>;
   const lot = sp.lot && sp.lot !== "all" ? lots.find((l) => l.id === sp.lot) : undefined;
   const ids = lot ? [lot.id] : lots.map((l) => l.id);
@@ -34,6 +36,11 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const daily = dailyGross(rows, days);
   const avg = rs.confirmed ? rs.grossPaise / rs.confirmed : 0;
   const perLot = lots.map((l) => ({ l, s: reservationSummary(rows.filter((r) => r.lot_id === l.id)) })).filter((x) => x.s.reservations > 0).sort((a, b) => b.s.grossPaise - a.s.grossPaise);
+  // Demo lots have no real bookings yet: show a clearly labelled SIMULATED estimate. Lots with real bookings never get one.
+  const withBookings = new Set(rows.map((r) => r.lot_id));
+  const simLots = lots.filter((l) => ids.includes(l.id) && l.is_synthetic && !withBookings.has(l.id));
+  const simRules = simLots.length ? (await sb.from("price_rules").select("lot_id,rules").in("lot_id", simLots.map((l) => l.id)).eq("active", true).is("zone_id", null)).data ?? [] : [];
+  const simDaily = simLots.length ? simLots.map((l) => simulatedDailyGross({ lotId: l.id, category: l.category, capacity: (l.zones ?? []).reduce((n, z) => n + z.capacity, 0), rules: { ...DEFAULT_RULES, ...((simRules.find((r) => r.lot_id === l.id)?.rules as Partial<PricingRules>) ?? {}) } as PricingRules, days })).reduce((acc, d) => acc.map((x, i) => ({ day: x.day, paise: x.paise + d[i]!.paise }))) : [];
   const href = (o: { lot?: string; days?: number }) => `/operator/analytics?lot=${o.lot ?? sp.lot ?? "all"}&days=${o.days ?? days}`;
   return (
     <main className="shell">
@@ -55,6 +62,11 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
         <div className="kpi"><div className="k">{t("kConv")}</div><div className="v">{rs.conversionPct ?? "—"}{rs.conversionPct !== null ? "%" : ""}</div><div className="s">{t("kLost", { n: rs.cancelledOrExpired })}</div></div>
       </div>
       <div className="card"><h2>{t("dailyGross")}</h2><BarChart data={daily.map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("dailyGross")} format={(n) => `₹${n.toLocaleString("en-IN")}`} /></div>
+      {simDaily.length > 0 && (
+        <div className="card" data-testid="sim-revenue"><h2>{t("simRevenue")} <span className="pill demo">{t("simulatedBadge")}</span></h2>
+          <BarChart data={simDaily.map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("simRevenue")} format={(n) => `₹${n.toLocaleString("en-IN")}`} />
+          <p className="muted" style={{ marginBottom: 0 }}>{t("simRevenueNote")}</p></div>
+      )}
       <div className="grid2">
         <div className="card"><h2>{t("occByHour")}</h2><HourChart profile={profile} /></div>
         <div className="card">
