@@ -10,6 +10,7 @@ import { ValetQueue, type ValetRow } from "../../components/ValetQueue";
 import { getLang } from "../../lib/lang";
 import { supabaseServer } from "../../lib/supabase/server";
 import { operatorScope, scopedLots } from "../../lib/operator-scope";
+import { simulatedOccupancy } from "../../lib/simulated-occupancy";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,20 @@ export default async function Operator() {
   const { data: { user } } = await sb.auth.getUser();
   const scope = await operatorScope(sb);
   if (!scope) return <main className="shell"><div className="card">Sign in with an operator account to see this page.</div></main>;
-  const lots = (await scopedLots(sb, scope, "id,name,city,status,category,last_feed_at")) as Array<{ id: string; name: string; city: string; status: string; category: string; last_feed_at: string | null }>;
+  const lots = (await scopedLots(sb, scope, "id,name,city,status,category,last_feed_at,is_synthetic,zones(capacity)")) as Array<{ id: string; name: string; city: string; status: string; category: string; last_feed_at: string | null; is_synthetic: boolean; zones: { capacity: number }[] | null }>;
   const myIds = lots.map((l) => l.id);
   const none = myIds.length === 0;
   const { data: live } = none ? { data: [] } : await sb.from("lot_live_state").select("lot_id,occupied,capacity,updated_at,is_synthetic").in("lot_id", myIds);
   const byLot = new Map((live ?? []).map((l) => [l.lot_id, l as Live]));
+  // Demo lots have no real feed: show a SIMULATED count, computed now and labelled, never stored. Real lots never get one.
+  const nowIso = new Date().toISOString();
+  for (const l of lots) {
+    const cap = (l.zones ?? []).reduce((n, z) => n + z.capacity, 0);
+    if (l.is_synthetic && !byLot.has(l.id) && cap > 0) {
+      byLot.set(l.id, { lot_id: l.id, occupied: Math.round(simulatedOccupancy({ lotId: l.id, category: l.category, at: new Date() }) * cap), capacity: cap, updated_at: nowIso, is_synthetic: true });
+    }
+  }
+  const { data: org } = scope.orgId ? await sb.from("organizations").select("name,verified_at").eq("id", scope.orgId).maybeSingle() : { data: null };
   const in2h = new Date(Date.now() + 2 * 3600_000).toISOString();
   const { data: fc } = none ? { data: [] } : await sb.from("forecasts").select("lot_id,p_full").in("lot_id", myIds).gte("target_time", new Date().toISOString()).lte("target_time", in2h);
   const maxFull = new Map<string, number>();
@@ -47,7 +57,7 @@ export default async function Operator() {
   const { data: wlAll } = await sb.from("waitlist").select("lot_id").in("lot_id", myIds);
   const waitBy = new Map<string, number>();
   for (const w of wlAll ?? []) waitBy.set(w.lot_id, (waitBy.get(w.lot_id) ?? 0) + 1);
-  const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
+  const rows: LotRow[] = lots.map((l) => ({ id: l.id, name: l.name, city: l.city, status: l.status, category: l.category, live: byLot.get(l.id) ?? null }));
   const since7 = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const [{ data: res7 }, { data: soon }] = await Promise.all([
     sb.from("reservations").select("status,total_paise,duration_min").in("lot_id", myIds).gte("created_at", since7).limit(5000),
@@ -60,15 +70,17 @@ export default async function Operator() {
   return (
     <main className="shell">
       <div className="top rowb">
-        <div><h1>{t("opOverview")}</h1><p>{user?.email}</p></div>
+        <div><h1>{t("opOverview")}</h1><p>{org?.name ? `${org.name} · ` : ""}{user?.email}{org?.verified_at && <> · <span className="pill green">{t("verifiedBadge")}</span></>}</p></div>
         <Link href="/operator/lots/new" className="btn">{t("addLot")}</Link>
       </div>
+      {org && !org.verified_at && !scope.isPlatformAdmin && <div className="card" role="status" data-testid="verify-pending">{t("verifyPending")}</div>}
       <div className="kpis" data-testid="op-kpis">
         <div className="kpi"><div className="k">{t("kLots")}</div><div className="v">{(lots ?? []).filter((l) => l.status === "approved").length}</div><div className="s">{t("kLotsNote", { n: (lots ?? []).length })}</div></div>
         <div className="kpi"><div className="k">{t("kInNow")}</div><div className="v">{cap ? `${occ}/${cap}` : "—"}</div><div className="s">{cap ? `${Math.round((occ / cap) * 100)}% ${t("fullNow")}` : t("noFeedYet")}</div></div>
         <div className="kpi"><div className="k">{t("kGross7")}</div><div className="v">{rupees(week.grossPaise)}</div><div className="s">{t("kBookingsN", { n: week.confirmed })}</div></div>
         <div className="kpi"><div className="k">{t("kArriving")}</div><div className="v">{(soon ?? []).length}</div><div className="s">{t("kNext2h")}</div></div>
       </div>
+      {liveRows.some((l) => l.is_synthetic) && <p className="muted" data-testid="sim-note">{t("simulatedNote")}</p>}
       {alerts.length > 0 && (
         <section aria-label="Alerts" data-testid="alerts" className="card">
           <h2>{t("alertsTitle")}</h2>

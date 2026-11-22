@@ -1,5 +1,7 @@
 # Status: what is real, what is mocked, what is missing
 
+**Update, 22 Nov 2026 (evening).** Sign-in is the first page (driver or operator). Operators give a GSTIN and an admin verifies them (migration 0011, not yet applied). Operator screens only show the operator's own organisation. Demo accounts: `seed/demo_accounts.sql`.
+
 **Update, 22 Nov 2026.** Interface redesign: map-first Find parking, desktop nav, live trip screen, rewards and referrals (migration 0010, not yet applied to Supabase), operator overview KPIs, revenue page with CSV export, reservations list. Fixed the MapLibre worker URL (maps could not draw tiles in production builds). See `docs/USER_JOURNEY.md`.
 
 **Update, 19 Nov 2026 evening.** Since milestone 13: migrations 0006 to 0009 are applied; 18 real places with SIMULATED occupancy replace the 12 invented lots; the app is two-sided (driver and operator sign-up, switching, operator tab bar); dark gold interface in four languages; best time to arrive, price alerts, saved cars, QR entry pass, operator revenue forecast, valet requests, EV bays, find-my-car pin and wait-list are built. Live site behaviour with signed-in accounts has not been verified. See `CLAUDE.md` for working rules.

@@ -13,6 +13,18 @@ test("first page is the sign-in with a driver / operator choice", async ({ page 
   await expect(page.getByRole("button", { name: "I run a parking place" })).toBeVisible();
 });
 
+test("operator sign-up asks for a GSTIN and rejects a bad one", async ({ page }) => {
+  await page.goto("/login?mode=up");
+  await page.getByRole("button", { name: "I run a parking place" }).click();
+  await expect(page.getByLabel(/GSTIN/)).toBeVisible();
+  await page.getByLabel("Email").fill("owner@example.com");
+  await page.getByLabel("Password").fill("longenough1");
+  await page.getByLabel("Business name").fill("Test Mall Parking");
+  await page.getByLabel(/GSTIN/).fill("27AAACP1234C1Z9");
+  await page.getByRole("button", { name: "Sign up" }).click();
+  await expect(page.locator("p.err")).toContainText("GSTIN");
+});
+
 test("invite link remembers the code and goes to sign-up", async ({ page, context }) => {
   await page.goto("/r/ab12cd34");
   await expect(page).toHaveURL(/\/login\?mode=up/);

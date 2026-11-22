@@ -1,6 +1,12 @@
 // Strings for the redesign (map-first search, live trip, rewards, operator console). Hindi, Gujarati and Marathi: please have native speakers review.
 export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>> = {
   en: {
+    gstinLabel: "GSTIN (15 characters)",
+    gstinHelp: "Your business's GST number. An admin checks it before your lots can go live.",
+    gstinBad: "That GSTIN does not look right. Check all 15 characters.",
+    verifyPending: "Verification pending: an admin is checking your GSTIN. You can set up lots now and submit them once you are verified.",
+    verifiedBadge: "Verified business",
+    needVerify: "Your business must be verified before you can submit a lot.",
     wrongRoleOp: 'This is an operator account. Choose "I run a parking place" above.',
     wrongRoleDrv: 'This is a driver account. Choose "I\'m a driver" above.',
     tabRewards: "Rewards",
@@ -112,6 +118,12 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
     yourCode: "Your invite code",
   },
   hi: {
+    gstinLabel: "GSTIN (15 अक्षर)",
+    gstinHelp: "आपके व्यवसाय का GST नंबर। आपके पार्किंग स्थल लाइव होने से पहले एडमिन इसकी जाँच करता है।",
+    gstinBad: "यह GSTIN सही नहीं लगता। सभी 15 अक्षर जाँचें।",
+    verifyPending: "सत्यापन लंबित: एडमिन आपका GSTIN जाँच रहा है। आप अभी पार्किंग स्थल बना सकते हैं और सत्यापन के बाद जमा कर सकते हैं।",
+    verifiedBadge: "सत्यापित व्यवसाय",
+    needVerify: "पार्किंग स्थल जमा करने से पहले आपका व्यवसाय सत्यापित होना चाहिए।",
     wrongRoleOp: "यह ऑपरेटर खाता है। ऊपर ‘मैं पार्किंग चलाता/चलाती हूँ’ चुनें।",
     wrongRoleDrv: "यह ड्राइवर खाता है। ऊपर ‘मैं ड्राइवर हूँ’ चुनें।",
   tabRewards: "रिवॉर्ड",
@@ -223,6 +235,12 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "आपका न्योता कोड",
 },
   gu: {
+    gstinLabel: "GSTIN (15 અક્ષર)",
+    gstinHelp: "તમારા વ્યવસાયનો GST નંબર. તમારા પાર્કિંગ લાઇવ થાય તે પહેલાં એડમિન તેની તપાસ કરે છે.",
+    gstinBad: "આ GSTIN સાચો લાગતો નથી. બધા 15 અક્ષર તપાસો.",
+    verifyPending: "ચકાસણી બાકી: એડમિન તમારો GSTIN તપાસી રહ્યા છે. તમે હમણાં પાર્કિંગ બનાવી શકો છો અને ચકાસણી પછી સબમિટ કરી શકો છો.",
+    verifiedBadge: "ચકાસાયેલ વ્યવસાય",
+    needVerify: "પાર્કિંગ સબમિટ કરતા પહેલાં તમારો વ્યવસાય ચકાસાયેલ હોવો જોઈએ.",
     wrongRoleOp: "આ ઓપરેટર એકાઉન્ટ છે. ઉપર ‘હું પાર્કિંગ ચલાવું છું’ પસંદ કરો.",
     wrongRoleDrv: "આ ડ્રાઇવર એકાઉન્ટ છે. ઉપર ‘હું ડ્રાઇવર છું’ પસંદ કરો.",
   tabRewards: "રિવોર્ડ્સ",
@@ -334,6 +352,12 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "તમારો આમંત્રણ કોડ",
 },
   mr: {
+    gstinLabel: "GSTIN (15 अक्षरे)",
+    gstinHelp: "तुमच्या व्यवसायाचा GST क्रमांक. तुमची पार्किंग लाइव्ह होण्यापूर्वी अॅडमिन तो तपासतो.",
+    gstinBad: "हा GSTIN बरोबर वाटत नाही. सर्व 15 अक्षरे तपासा.",
+    verifyPending: "पडताळणी प्रलंबित: अॅडमिन तुमचा GSTIN तपासत आहे. तुम्ही आता पार्किंग तयार करू शकता आणि पडताळणीनंतर सादर करू शकता.",
+    verifiedBadge: "पडताळलेला व्यवसाय",
+    needVerify: "पार्किंग सादर करण्यापूर्वी तुमचा व्यवसाय पडताळलेला असणे आवश्यक आहे.",
     wrongRoleOp: "हे ऑपरेटर खाते आहे. वर ‘मी पार्किंग चालवतो/चालवते’ निवडा.",
     wrongRoleDrv: "हे ड्रायव्हर खाते आहे. वर ‘मी ड्रायव्हर आहे’ निवडा.",
   tabRewards: "रिवॉर्ड",

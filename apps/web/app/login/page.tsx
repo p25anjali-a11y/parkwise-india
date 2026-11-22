@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 import { LangSwitch, useT } from "../../components/I18n";
 import { Mascot } from "../../components/Mascot";
+import { isValidGstin, normaliseGstin } from "../../lib/gstin";
 
 export default function Login() {
   const { t } = useT();
@@ -13,6 +14,7 @@ export default function Login() {
   const [kind, setKind] = useState<"driver" | "operator">("driver");
   const [orgName, setOrgName] = useState("");
   const [orgCity, setOrgCity] = useState("Mumbai");
+  const [gstin, setGstin] = useState("");
   const [mode, setMode] = useState<"in" | "up">("in");
   const [msg, setMsg] = useState("");
   useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "up") setMode("up"); }, []);
@@ -20,16 +22,17 @@ export default function Login() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
+    if (mode === "up" && kind === "operator" && !isValidGstin(gstin)) return setMsg(t("gstinBad"));
     const sb = supabaseBrowser();
     const plate = carPlate.trim().toUpperCase();
     const { error } =
       mode === "in"
         ? await sb.auth.signInWithPassword({ email, password })
-        : await sb.auth.signUp({ email, password, options: { data: kind === "operator" ? { account_type: "operator", org_name: orgName.trim(), org_city: orgCity } : { account_type: "driver", car_model: carModel.trim(), car_plate: plate } } });
+        : await sb.auth.signUp({ email, password, options: { data: kind === "operator" ? { account_type: "operator", org_name: orgName.trim(), org_city: orgCity, gstin: normaliseGstin(gstin) } : { account_type: "driver", car_model: carModel.trim(), car_plate: plate } } });
     if (error) return setMsg(error.message);
     if (mode === "up") return setMsg(t("checkEmail"));
     const { data: { user } } = await sb.auth.getUser();
-    const meta = (user?.user_metadata ?? {}) as { account_type?: string; org_name?: string; org_city?: string };
+    const meta = (user?.user_metadata ?? {}) as { account_type?: string; org_name?: string; org_city?: string; gstin?: string };
     const { data: prof } = await sb.from("profiles").select("role").eq("id", user?.id ?? "").maybeSingle();
     const isOpAccount = prof?.role === "operator" || prof?.role === "operator_admin" || (meta.account_type === "operator" && !!meta.org_name);
     if (prof?.role !== "platform_admin") {
@@ -37,7 +40,8 @@ export default function Login() {
       if (kind === "operator" && !isOpAccount) { await sb.auth.signOut(); return setMsg(t("wrongRoleDrv")); }
     }
     if (meta.account_type === "operator" && prof?.role === "driver" && meta.org_name) {
-      await fetch("/api/operator/join", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgName: meta.org_name, city: meta.org_city ?? "Mumbai" }) });
+      const j = await fetch("/api/operator/join", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgName: meta.org_name, city: meta.org_city ?? "Mumbai", gstin: meta.gstin ?? "" }) });
+      if (!j.ok) { const e = (await j.json().catch(() => ({}))) as { error?: string }; await sb.auth.signOut(); return setMsg(e.error ?? "Could not set up your business."); }
       window.location.href = "/operator";
       return;
     }
@@ -66,6 +70,8 @@ export default function Login() {
           <>
             <label className="f">{t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>
             <label className="f">{t("businessCity")}<select value={orgCity} onChange={(e) => setOrgCity(e.target.value)}><option>Mumbai</option><option>Ahmedabad</option></select></label>
+            <label className="f">{t("gstinLabel")}<input value={gstin} onChange={(e) => setGstin(e.target.value)} required minLength={15} maxLength={17} autoCapitalize="characters" aria-describedby="gstin-help" /></label>
+            <p id="gstin-help" className="muted" style={{ marginTop: -6 }}>{t("gstinHelp")}</p>
           </>
         )}
         {mode === "up" && kind === "driver" && (
