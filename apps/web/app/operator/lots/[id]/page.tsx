@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { quote, DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
 import { supabaseServer } from "../../../../lib/supabase/server";
+import { operatorScope } from "../../../../lib/operator-scope";
 import { RulesForm } from "./RulesForm";
 import { submitForApproval } from "./actions";
 
@@ -10,7 +11,11 @@ export const dynamic = "force-dynamic";
 export default async function LotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const sb = await supabaseServer();
-  const { data: lot } = await sb.from("lots").select("id,name,city,address,category,status").eq("id", id).maybeSingle();
+  const scope = await operatorScope(sb);
+  if (!scope) notFound();
+  let lq = sb.from("lots").select("id,name,city,address,category,status").eq("id", id);
+  if (scope.orgId) lq = lq.eq("org_id", scope.orgId);
+  const { data: lot } = await lq.maybeSingle();
   if (!lot) notFound();
   const { data: zones } = await sb.from("zones").select("id,name,capacity,reservable_pct,reserved_count").eq("lot_id", id);
   const { data: rr } = await sb.from("price_rules").select("rules").eq("lot_id", id).eq("active", true).is("zone_id", null).maybeSingle();

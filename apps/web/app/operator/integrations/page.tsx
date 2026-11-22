@@ -3,13 +3,16 @@ import { FEED_ADAPTERS, feedHealth } from "@parkwise/providers";
 import { headers } from "next/headers";
 import { supabaseAdmin } from "../../../lib/supabase/admin";
 import { supabaseServer } from "../../../lib/supabase/server";
+import { operatorScope, scopedLots } from "../../../lib/operator-scope";
 import { LotFeedPanel } from "./LotFeedPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function Integrations() {
   const sb = await supabaseServer();
-  const { data: lots } = await sb.from("lots").select("id,name,feed_source,last_feed_at,status").order("name");
+  const scope = await operatorScope(sb);
+  if (!scope) return <main className="shell"><div className="card">Sign in with an operator account to see this page.</div></main>;
+  const lots = (await scopedLots(sb, scope, "id,name,feed_source,last_feed_at,status")) as Array<{ id: string; name: string; feed_source: string | null; last_feed_at: string | null; status: string }>;
   const admin = supabaseAdmin();
   const eps = admin && (lots ?? []).length ? (await admin.from("feed_endpoints").select("id,lot_id,secret_prefix").in("lot_id", (lots ?? []).map((l) => l.id)).eq("active", true)).data ?? [] : [];
   const h = await headers();

@@ -6,6 +6,7 @@ import { dailyGross } from "../../../lib/csv-export";
 import { getLang } from "../../../lib/lang";
 import { rupees } from "../../../lib/referral";
 import { supabaseServer } from "../../../lib/supabase/server";
+import { operatorScope, scopedLots } from "../../../lib/operator-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +15,10 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const days = [7, 14, 30].includes(Number(sp.days)) ? Number(sp.days) : 30;
   const sb = await supabaseServer();
-  const { data: lots } = await sb.from("lots").select("id,name").order("name");
-  if (!lots || lots.length === 0) return <main className="shell"><div className="top"><h1>{t("opRevenue")}</h1></div><div className="card">{t("noLotsYet")}</div></main>;
+  const scope = await operatorScope(sb);
+  if (!scope) return <main className="shell"><div className="card">Sign in with an operator account to see this page.</div></main>;
+  const lots = (await scopedLots(sb, scope, "id,name")) as Array<{ id: string; name: string }>;
+  if (lots.length === 0) return <main className="shell"><div className="top"><h1>{t("opRevenue")}</h1></div><div className="card">{t("noLotsYet")}</div></main>;
   const lot = sp.lot && sp.lot !== "all" ? lots.find((l) => l.id === sp.lot) : undefined;
   const ids = lot ? [lot.id] : lots.map((l) => l.id);
   const since = new Date(Date.now() - days * 86_400_000).toISOString();

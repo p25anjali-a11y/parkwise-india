@@ -7,14 +7,18 @@ import { supabaseServer } from "../../../lib/supabase/server";
 
 export interface ActionState { error?: string; ok?: string; secret?: string; endpointId?: string }
 
-/** Confirms the caller is an operator admin of the lot's organisation, using RLS (lots are only visible to their org). */
+/** Confirms the caller is an operator admin of the lot's organisation, by organisation. */
 async function authorise(lotId: string) {
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return null;
   const { data: me } = await sb.from("profiles").select("role").eq("id", user.id).maybeSingle();
   if (me?.role !== "operator_admin" && me?.role !== "platform_admin") return null;
-  const { data: lot } = await sb.from("lots").select("id").eq("id", lotId).maybeSingle();
+  // Approved lots are readable by everyone, so check the organisation explicitly.
+  const { data: prof } = await sb.from("profiles").select("org_id").eq("id", user.id).maybeSingle();
+  let lq = sb.from("lots").select("id").eq("id", lotId);
+  if (me.role !== "platform_admin") lq = lq.eq("org_id", prof?.org_id ?? "00000000-0000-0000-0000-000000000000");
+  const { data: lot } = await lq.maybeSingle();
   return lot ? user : null;
 }
 

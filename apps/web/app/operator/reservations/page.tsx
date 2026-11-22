@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLang } from "../../../lib/lang";
 import { rupees } from "../../../lib/referral";
 import { supabaseServer } from "../../../lib/supabase/server";
+import { operatorScope, scopedLots } from "../../../lib/operator-scope";
 
 export const dynamic = "force-dynamic";
 const STATUSES = ["all", "held", "confirmed", "checked_in", "completed", "cancelled", "expired", "no_show"] as const;
@@ -12,9 +13,12 @@ export default async function OperatorReservations({ searchParams }: { searchPar
   const sp = await searchParams;
   const status = (STATUSES as readonly string[]).includes(sp.status ?? "") ? sp.status! : "all";
   const sb = await supabaseServer();
-  const { data: lots } = await sb.from("lots").select("id,name").order("name");
+  const scope = await operatorScope(sb);
+  if (!scope) return <main className="shell"><div className="card">Sign in with an operator account to see this page.</div></main>;
+  const lots = (await scopedLots(sb, scope, "id,name")) as Array<{ id: string; name: string }>;
+  const myIds = lots.map((l) => l.id);
   const lotId = (lots ?? []).find((l) => l.id === sp.lot)?.id;
-  let q = sb.from("reservations").select("id,status,arrival_at,duration_min,total_paise,created_at,lot_id,lots(name)").order("arrival_at", { ascending: false }).limit(100);
+  let q = sb.from("reservations").select("id,status,arrival_at,duration_min,total_paise,created_at,lot_id,lots(name)").in("lot_id", myIds).order("arrival_at", { ascending: false }).limit(100);
   if (status !== "all") q = q.eq("status", status as (typeof STATUSES)[number] & string);
   if (lotId) q = q.eq("lot_id", lotId);
   const { data } = await q;

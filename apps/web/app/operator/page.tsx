@@ -9,6 +9,7 @@ import { forecastRevenue } from "../../lib/revenue-forecast";
 import { ValetQueue, type ValetRow } from "../../components/ValetQueue";
 import { getLang } from "../../lib/lang";
 import { supabaseServer } from "../../lib/supabase/server";
+import { operatorScope, scopedLots } from "../../lib/operator-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +17,18 @@ export default async function Operator() {
   if (!hasSupabaseEnv()) return <main style={{ padding: 24 }}>Supabase is not configured for this deployment.</main>;
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
-  const { data: lots } = await sb.from("lots").select("id,name,city,status,category").order("name");
-  const { data: live } = await sb.from("lot_live_state").select("lot_id,occupied,capacity,updated_at,is_synthetic");
+  const scope = await operatorScope(sb);
+  if (!scope) return <main className="shell"><div className="card">Sign in with an operator account to see this page.</div></main>;
+  const lots = (await scopedLots(sb, scope, "id,name,city,status,category,last_feed_at")) as Array<{ id: string; name: string; city: string; status: string; category: string; last_feed_at: string | null }>;
+  const myIds = lots.map((l) => l.id);
+  const none = myIds.length === 0;
+  const { data: live } = none ? { data: [] } : await sb.from("lot_live_state").select("lot_id,occupied,capacity,updated_at,is_synthetic").in("lot_id", myIds);
   const byLot = new Map((live ?? []).map((l) => [l.lot_id, l as Live]));
-  const { data: lotFeed } = await sb.from("lots").select("id,last_feed_at");
   const in2h = new Date(Date.now() + 2 * 3600_000).toISOString();
-  const { data: fc } = await sb.from("forecasts").select("lot_id,p_full").gte("target_time", new Date().toISOString()).lte("target_time", in2h);
+  const { data: fc } = none ? { data: [] } : await sb.from("forecasts").select("lot_id,p_full").in("lot_id", myIds).gte("target_time", new Date().toISOString()).lte("target_time", in2h);
   const maxFull = new Map<string, number>();
   for (const f of fc ?? []) maxFull.set(f.lot_id, Math.max(maxFull.get(f.lot_id) ?? 0, Number(f.p_full)));
-  const feedBy = new Map((lotFeed ?? []).map((l) => [l.id, l.last_feed_at as string | null]));
+  const feedBy = new Map(lots.map((l) => [l.id, l.last_feed_at]));
   const alerts = computeAlerts(
     (lots ?? []).filter((l) => l.status === "approved").map((l) => ({
       lotId: l.id, lotName: l.name, occupied: byLot.get(l.id)?.occupied ?? null, capacity: byLot.get(l.id)?.capacity ?? null,
@@ -38,16 +42,16 @@ export default async function Operator() {
     const pts = s.series.filter((p) => p.occupancy !== null).map((p) => ({ at: p.at, occupancy: p.occupancy as number, ratePerHour: p.ratePerHour }));
     return pts.length ? { name: s.name, simulated: s.simulated, ...forecastRevenue(pts, s.capacity) } : null;
   }))).filter((x): x is NonNullable<typeof x> => x !== null);
-  const { data: valetData } = await sb.from("valet_requests").select("id,status,note,created_at,lots(name)").neq("status", "done").order("created_at").limit(20);
+  const { data: valetData } = await sb.from("valet_requests").select("id,status,note,created_at,lots(name)").in("lot_id", myIds).neq("status", "done").order("created_at").limit(20);
   const valetRows: ValetRow[] = (valetData ?? []).map((v) => ({ id: v.id, status: v.status, note: v.note, lot: (v.lots as unknown as { name: string } | null)?.name ?? "Lot", arrival: new Date(v.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) }));
-  const { data: wlAll } = await sb.from("waitlist").select("lot_id");
+  const { data: wlAll } = await sb.from("waitlist").select("lot_id").in("lot_id", myIds);
   const waitBy = new Map<string, number>();
   for (const w of wlAll ?? []) waitBy.set(w.lot_id, (waitBy.get(w.lot_id) ?? 0) + 1);
   const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
   const since7 = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const [{ data: res7 }, { data: soon }] = await Promise.all([
-    sb.from("reservations").select("status,total_paise,duration_min").gte("created_at", since7).limit(5000),
-    sb.from("reservations").select("id").eq("status", "confirmed").gte("arrival_at", new Date().toISOString()).lte("arrival_at", in2h),
+    sb.from("reservations").select("status,total_paise,duration_min").in("lot_id", myIds).gte("created_at", since7).limit(5000),
+    sb.from("reservations").select("id").in("lot_id", myIds).eq("status", "confirmed").gte("arrival_at", new Date().toISOString()).lte("arrival_at", in2h),
   ]);
   const week = reservationSummary(res7 ?? []);
   const liveRows = [...byLot.values()].filter((l) => l.capacity > 0);
