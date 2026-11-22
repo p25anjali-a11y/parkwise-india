@@ -11,7 +11,7 @@ import { getLang } from "../../lib/lang";
 import { supabaseServer } from "../../lib/supabase/server";
 import { operatorScope, scopedLots } from "../../lib/operator-scope";
 import { simulatedOccupancy } from "../../lib/simulated-occupancy";
-import { simulatedDailyGross, simulatedSummary } from "../../lib/simulated-revenue";
+import { simulatedDailyGross, sumDaily } from "../../lib/simulated-revenue";
 import { LiveLotSim } from "../../components/LiveLotSim";
 import { DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
 
@@ -72,8 +72,9 @@ export default async function Operator({ searchParams }: { searchParams: Promise
   const capOf = (l: (typeof lots)[number]) => (l.zones ?? []).reduce((n, z) => n + z.capacity, 0);
   const simLots = lots.filter((l) => l.is_synthetic && l.status === "approved" && capOf(l) > 0);
   const simRules = simLots.length ? (await sb.from("price_rules").select("lot_id,rules").in("lot_id", simLots.map((l) => l.id)).eq("active", true).is("zone_id", null)).data ?? [] : [];
-  const useSim = week.confirmed === 0 && simLots.length > 0;
-  const simWeek = useSim ? simulatedSummary(simLots.map((l) => simulatedDailyGross({ lotId: l.id, category: l.category, capacity: capOf(l), rules: { ...DEFAULT_RULES, ...((simRules.find((r) => r.lot_id === l.id)?.rules as Partial<PricingRules>) ?? {}) } as PricingRules, days: 7 })).reduce((acc, d) => acc.map((x, i) => ({ day: x.day, paise: x.paise + d[i]!.paise, bayHours: x.bayHours + d[i]!.bayHours })))) : null;
+  const useSim = simLots.length > 0;
+  const simDays = sumDaily(simLots.map((l) => simulatedDailyGross({ lotId: l.id, category: l.category, capacity: capOf(l), rules: { ...DEFAULT_RULES, ...((simRules.find((r) => r.lot_id === l.id)?.rules as Partial<PricingRules>) ?? {}) } as PricingRules, days: 7 })));
+  const simWeek = useSim ? { grossPaise: week.grossPaise + simDays.reduce((n, d) => n + d.paise, 0), bookings: week.confirmed + simDays.reduce((n, d) => n + d.appVehicles + d.gateVehicles, 0) } : null;
   const liveLot = simLots.find((l) => l.id === sp.lot) ?? simLots[0];
   const liveRows = [...byLot.values()].filter((l) => l.capacity > 0);
   const occ = liveRows.reduce((n, l) => n + l.occupied, 0);
