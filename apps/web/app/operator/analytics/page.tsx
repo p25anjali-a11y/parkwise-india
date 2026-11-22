@@ -3,7 +3,7 @@ import { BarChart, HourChart } from "../../../components/charts";
 import { ICON } from "../../../components/icons";
 import { hourlyProfile, pricingSummary, reservationSummary } from "../../../lib/analytics";
 import { dailyGross } from "../../../lib/csv-export";
-import { simulatedDailyGross } from "../../../lib/simulated-revenue";
+import { simulatedDailyGross, simulatedHourlyProfile, simulatedSummary } from "../../../lib/simulated-revenue";
 import { DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
 import { getLang } from "../../../lib/lang";
 import { rupees } from "../../../lib/referral";
@@ -40,7 +40,11 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const withBookings = new Set(rows.map((r) => r.lot_id));
   const simLots = lots.filter((l) => ids.includes(l.id) && l.is_synthetic && !withBookings.has(l.id));
   const simRules = simLots.length ? (await sb.from("price_rules").select("lot_id,rules").in("lot_id", simLots.map((l) => l.id)).eq("active", true).is("zone_id", null)).data ?? [] : [];
-  const simDaily = simLots.length ? simLots.map((l) => simulatedDailyGross({ lotId: l.id, category: l.category, capacity: (l.zones ?? []).reduce((n, z) => n + z.capacity, 0), rules: { ...DEFAULT_RULES, ...((simRules.find((r) => r.lot_id === l.id)?.rules as Partial<PricingRules>) ?? {}) } as PricingRules, days })).reduce((acc, d) => acc.map((x, i) => ({ day: x.day, paise: x.paise + d[i]!.paise }))) : [];
+  const simDaily = simLots.length ? simLots.map((l) => simulatedDailyGross({ lotId: l.id, category: l.category, capacity: (l.zones ?? []).reduce((n, z) => n + z.capacity, 0), rules: { ...DEFAULT_RULES, ...((simRules.find((r) => r.lot_id === l.id)?.rules as Partial<PricingRules>) ?? {}) } as PricingRules, days })).reduce((acc, d) => acc.map((x, i) => ({ day: x.day, paise: x.paise + d[i]!.paise, bayHours: x.bayHours + d[i]!.bayHours }))) : [];
+  // With no real bookings at all, the KPIs and the by-hour chart fall back to the simulation (labelled).
+  const useSim = rows.length === 0 && simDaily.length > 0;
+  const sim = simulatedSummary(simDaily);
+  const profileShown = useSim ? simulatedHourlyProfile(simLots) : profile;
   const href = (o: { lot?: string; days?: number }) => `/operator/analytics?lot=${o.lot ?? sp.lot ?? "all"}&days=${o.days ?? days}`;
   return (
     <main className="shell">
@@ -56,19 +60,19 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
         {[7, 14, 30].map((d) => <Link key={d} href={href({ days: d })} className={d === days ? "chip on" : "chip"}>{t("lastDays", { n: d })}</Link>)}
       </div>
       <div className="kpis" data-testid="revenue-kpis">
-        <div className="kpi"><div className="k">{t("kGross")}</div><div className="v">{rupees(rs.grossPaise)}</div><div className="s">{t("kGrossNote")}</div></div>
-        <div className="kpi"><div className="k">{t("kBookings")}</div><div className="v">{rs.confirmed}</div><div className="s">{t("kOfTotal", { n: rs.reservations })}</div></div>
-        <div className="kpi"><div className="k">{t("kAvg")}</div><div className="v">{rupees(Math.round(avg))}</div><div className="s">{t("kPerBooking")}</div></div>
+        <div className="kpi"><div className="k">{t("kGross")}</div><div className="v">{rupees(useSim ? sim.grossPaise : rs.grossPaise)}</div><div className="s">{useSim ? t("simulatedBadge") : t("kGrossNote")}</div></div>
+        <div className="kpi"><div className="k">{t("kBookings")}</div><div className="v">{useSim ? sim.bookings : rs.confirmed}</div><div className="s">{useSim ? t("simulatedBadge") : t("kOfTotal", { n: rs.reservations })}</div></div>
+        <div className="kpi"><div className="k">{t("kAvg")}</div><div className="v">{rupees(useSim ? sim.avgPaise : Math.round(avg))}</div><div className="s">{useSim ? t("simulatedBadge") : t("kPerBooking")}</div></div>
         <div className="kpi"><div className="k">{t("kConv")}</div><div className="v">{rs.conversionPct ?? "—"}{rs.conversionPct !== null ? "%" : ""}</div><div className="s">{t("kLost", { n: rs.cancelledOrExpired })}</div></div>
       </div>
-      <div className="card"><h2>{t("dailyGross")}</h2><BarChart data={daily.map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("dailyGross")} format={(n) => `₹${n.toLocaleString("en-IN")}`} /></div>
+      <div className="card"><h2>{t("dailyGross")}</h2><BarChart data={(useSim ? simDaily : daily).map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("dailyGross")} format={(n) => `₹${n.toLocaleString("en-IN")}`} /></div>
       {simDaily.length > 0 && (
         <div className="card" data-testid="sim-revenue"><h2>{t("simRevenue")} <span className="pill demo">{t("simulatedBadge")}</span></h2>
           <BarChart data={simDaily.map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("simRevenue")} format={(n) => `₹${n.toLocaleString("en-IN")}`} />
           <p className="muted" style={{ marginBottom: 0 }}>{t("simRevenueNote")}</p></div>
       )}
       <div className="grid2">
-        <div className="card"><h2>{t("occByHour")}</h2><HourChart profile={profile} /></div>
+        <div className="card"><h2>{t("occByHour")}</h2><HourChart profile={profileShown} /></div>
         <div className="card">
           <h2>{t("pricingTitle")}</h2>
           <div className="rowb"><span className="muted">{t("quotesCount")}</span><strong>{ps.count}</strong></div>

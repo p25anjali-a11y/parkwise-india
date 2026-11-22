@@ -11,10 +11,14 @@ import { getLang } from "../../lib/lang";
 import { supabaseServer } from "../../lib/supabase/server";
 import { operatorScope, scopedLots } from "../../lib/operator-scope";
 import { simulatedOccupancy } from "../../lib/simulated-occupancy";
+import { simulatedDailyGross, simulatedSummary } from "../../lib/simulated-revenue";
+import { LiveLotSim } from "../../components/LiveLotSim";
+import { DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
 
 export const dynamic = "force-dynamic";
 
-export default async function Operator() {
+export default async function Operator({ searchParams }: { searchParams: Promise<{ lot?: string }> }) {
+  const sp = await searchParams;
   if (!hasSupabaseEnv()) return <main style={{ padding: 24 }}>Supabase is not configured for this deployment.</main>;
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
@@ -64,6 +68,13 @@ export default async function Operator() {
     sb.from("reservations").select("id").in("lot_id", myIds).eq("status", "confirmed").gte("arrival_at", new Date().toISOString()).lte("arrival_at", in2h),
   ]);
   const week = reservationSummary(res7 ?? []);
+  // Demo lots with no real bookings yet: a labelled SIMULATED week, so the console is not empty. Real bookings replace it automatically.
+  const capOf = (l: (typeof lots)[number]) => (l.zones ?? []).reduce((n, z) => n + z.capacity, 0);
+  const simLots = lots.filter((l) => l.is_synthetic && l.status === "approved" && capOf(l) > 0);
+  const simRules = simLots.length ? (await sb.from("price_rules").select("lot_id,rules").in("lot_id", simLots.map((l) => l.id)).eq("active", true).is("zone_id", null)).data ?? [] : [];
+  const useSim = week.confirmed === 0 && simLots.length > 0;
+  const simWeek = useSim ? simulatedSummary(simLots.map((l) => simulatedDailyGross({ lotId: l.id, category: l.category, capacity: capOf(l), rules: { ...DEFAULT_RULES, ...((simRules.find((r) => r.lot_id === l.id)?.rules as Partial<PricingRules>) ?? {}) } as PricingRules, days: 7 })).reduce((acc, d) => acc.map((x, i) => ({ day: x.day, paise: x.paise + d[i]!.paise, bayHours: x.bayHours + d[i]!.bayHours })))) : null;
+  const liveLot = simLots.find((l) => l.id === sp.lot) ?? simLots[0];
   const liveRows = [...byLot.values()].filter((l) => l.capacity > 0);
   const occ = liveRows.reduce((n, l) => n + l.occupied, 0);
   const cap = liveRows.reduce((n, l) => n + l.capacity, 0);
@@ -77,9 +88,17 @@ export default async function Operator() {
       <div className="kpis" data-testid="op-kpis">
         <div className="kpi"><div className="k">{t("kLots")}</div><div className="v">{(lots ?? []).filter((l) => l.status === "approved").length}</div><div className="s">{t("kLotsNote", { n: (lots ?? []).length })}</div></div>
         <div className="kpi"><div className="k">{t("kInNow")}</div><div className="v">{cap ? `${occ}/${cap}` : "—"}</div><div className="s">{cap ? `${Math.round((occ / cap) * 100)}% ${t("fullNow")}` : t("noFeedYet")}</div></div>
-        <div className="kpi"><div className="k">{t("kGross7")}</div><div className="v">{rupees(week.grossPaise)}</div><div className="s">{t("kBookingsN", { n: week.confirmed })}</div></div>
+        <div className="kpi"><div className="k">{t("kGross7")}</div><div className="v">{rupees(simWeek ? simWeek.grossPaise : week.grossPaise)}</div><div className="s">{simWeek ? `${t("kBookingsN", { n: simWeek.bookings })} · ${t("simulatedBadge")}` : t("kBookingsN", { n: week.confirmed })}</div></div>
         <div className="kpi"><div className="k">{t("kArriving")}</div><div className="v">{(soon ?? []).length}</div><div className="s">{t("kNext2h")}</div></div>
       </div>
+      {lots.length === 0 && <div className="card" data-testid="no-lots">{t("noLotsYet")}</div>}
+      {liveLot && (
+        <section data-testid="live-lot-section" style={{ marginBottom: 12 }}>
+          <h2>{t("liveLotTitle")} <span className="pill demo">{t("simulatedBadge")}</span></h2>
+          {simLots.length > 1 && <div className="chips" style={{ marginBottom: 8 }}>{simLots.map((l) => <Link key={l.id} href={`/operator?lot=${l.id}`} className={l.id === liveLot.id ? "chip on" : "chip"}>{l.name}</Link>)}</div>}
+          <LiveLotSim key={liveLot.id} lotId={liveLot.id} capacity={capOf(liveLot)} initial={simulatedOccupancy({ lotId: liveLot.id, category: liveLot.category, at: new Date() })} simulated city={liveLot.city} />
+        </section>
+      )}
       {liveRows.some((l) => l.is_synthetic) && <p className="muted" data-testid="sim-note">{t("simulatedNote")}</p>}
       {alerts.length > 0 && (
         <section aria-label="Alerts" data-testid="alerts" className="card">
