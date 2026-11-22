@@ -6,6 +6,8 @@ export interface OperatorScope {
   /** Null for a platform admin (sees every organisation). */
   orgId: string | null;
   isPlatformAdmin: boolean;
+  /** True when the organisation is a demo business: its lots show simulated traffic even if a lot itself is not flagged. */
+  demoOrg?: boolean;
 }
 
 /**
@@ -19,7 +21,10 @@ export async function operatorScope(sb: SupabaseClient): Promise<OperatorScope |
   const { data: me } = await sb.from("profiles").select("role,org_id").eq("id", user.id).maybeSingle();
   const role = me?.role as string | undefined;
   if (role === "platform_admin") return { userId: user.id, role, orgId: null, isPlatformAdmin: true };
-  if ((role === "operator" || role === "operator_admin") && me?.org_id) return { userId: user.id, role, orgId: me.org_id as string, isPlatformAdmin: false };
+  if ((role === "operator" || role === "operator_admin") && me?.org_id) {
+    const { data: org } = await sb.from("organizations").select("is_synthetic").eq("id", me.org_id).maybeSingle();
+    return { userId: user.id, role, orgId: me.org_id as string, isPlatformAdmin: false, demoOrg: org?.is_synthetic === true };
+  }
   return null;
 }
 
@@ -28,5 +33,6 @@ export async function scopedLots<T extends string>(sb: SupabaseClient, scope: Op
   let q = sb.from("lots").select(columns).order("name");
   if (scope.orgId) q = q.eq("org_id", scope.orgId);
   const { data } = await q;
-  return (data ?? []) as unknown as Array<Record<string, any>>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const rows = (data ?? []) as unknown as Array<Record<string, any>>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  return scope.demoOrg ? rows.map((r): Record<string, any> => ({ ...r, is_synthetic: true })) : rows; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
