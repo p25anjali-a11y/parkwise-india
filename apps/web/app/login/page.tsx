@@ -31,13 +31,18 @@ export default function Login() {
     const { data: { user } } = await sb.auth.getUser();
     const meta = (user?.user_metadata ?? {}) as { account_type?: string; org_name?: string; org_city?: string };
     const { data: prof } = await sb.from("profiles").select("role").eq("id", user?.id ?? "").maybeSingle();
+    const isOpAccount = prof?.role === "operator" || prof?.role === "operator_admin" || (meta.account_type === "operator" && !!meta.org_name);
+    if (prof?.role !== "platform_admin") {
+      if (kind === "driver" && isOpAccount) { await sb.auth.signOut(); return setMsg(t("wrongRoleOp")); }
+      if (kind === "operator" && !isOpAccount) { await sb.auth.signOut(); return setMsg(t("wrongRoleDrv")); }
+    }
     if (meta.account_type === "operator" && prof?.role === "driver" && meta.org_name) {
       await fetch("/api/operator/join", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgName: meta.org_name, city: meta.org_city ?? "Mumbai" }) });
       window.location.href = "/operator";
       return;
     }
     const next = new URLSearchParams(window.location.search).get("next");
-    window.location.href = next && next.startsWith("/") ? next : prof?.role === "platform_admin" ? "/admin" : prof?.role && prof.role !== "driver" ? "/operator" : "/driver";
+    window.location.href = next && next.startsWith("/") && (next.startsWith("/operator") ? kind === "operator" : kind === "driver") ? next : prof?.role === "platform_admin" ? "/admin" : prof?.role && prof.role !== "driver" ? "/operator" : "/search";
   }
 
   return (
@@ -49,14 +54,14 @@ export default function Login() {
         </div>
       </div>
       <form onSubmit={submit} className="card lift">
-        <label className="f">{t("email")}<input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-        <label className="f">{t("password")}<input type="password" autoComplete={mode === "in" ? "current-password" : "new-password"} minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-        {mode === "up" && (
+        {(
           <div className="chips" style={{ marginBottom: 12 }} role="group" aria-label="Account type">
             <button type="button" className={kind === "driver" ? "chip on" : "chip"} onClick={() => setKind("driver")}>{t("iAmDriver")}</button>
             <button type="button" className={kind === "operator" ? "chip on" : "chip"} onClick={() => setKind("operator")}>{t("iRunLot")}</button>
           </div>
         )}
+        <label className="f">{t("email")}<input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+        <label className="f">{t("password")}<input type="password" autoComplete={mode === "in" ? "current-password" : "new-password"} minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
         {mode === "up" && kind === "operator" && (
           <>
             <label className="f">{t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>

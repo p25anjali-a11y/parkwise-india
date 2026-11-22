@@ -9,7 +9,6 @@ const OP_TABS = [
   { href: "/operator/analytics", key: "opTabStats", ico: ICON.stats, match: ["/operator/analytics"] },
   { href: "/operator/reservations", key: "opTabBookings", ico: ICON.list, match: ["/operator/reservations"] },
   { href: "/operator/integrations", key: "opTabFeeds", ico: ICON.feeds, match: ["/operator/integrations"] },
-  { href: "/driver", key: "switchDriver", ico: ICON.swap, match: [] as string[] },
 ];
 
 const TABS = [
@@ -23,7 +22,7 @@ const TABS = [
 export function TabBar() {
   const path = usePathname() ?? "/";
   const { t } = useT();
-  if (path === "/" || path.startsWith("/admin")) return null;
+  if (path === "/" || path === "/login" || path.startsWith("/admin")) return null;
   const tabs = path.startsWith("/operator") ? OP_TABS : TABS;
   const active = tabs.filter((x) => x.match.some((m) => path === m || path.startsWith(m + "/"))).sort((a, b) => b.href.length - a.href.length)[0];
   return (

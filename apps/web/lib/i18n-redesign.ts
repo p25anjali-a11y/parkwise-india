@@ -1,6 +1,8 @@
 // Strings for the redesign (map-first search, live trip, rewards, operator console). Hindi, Gujarati and Marathi: please have native speakers review.
 export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>> = {
   en: {
+    wrongRoleOp: 'This is an operator account. Choose "I run a parking place" above.',
+    wrongRoleDrv: 'This is a driver account. Choose "I\'m a driver" above.',
     tabRewards: "Rewards",
     sortSpace: "Most space",
     refStep1: "Invite a friend",
@@ -110,6 +112,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
     yourCode: "Your invite code",
   },
   hi: {
+    wrongRoleOp: "यह ऑपरेटर खाता है। ऊपर ‘मैं पार्किंग चलाता/चलाती हूँ’ चुनें।",
+    wrongRoleDrv: "यह ड्राइवर खाता है। ऊपर ‘मैं ड्राइवर हूँ’ चुनें।",
   tabRewards: "रिवॉर्ड",
   sortSpace: "सबसे ज़्यादा जगह",
   refStep1: "दोस्त को बुलाइए",
@@ -219,6 +223,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "आपका न्योता कोड",
 },
   gu: {
+    wrongRoleOp: "આ ઓપરેટર એકાઉન્ટ છે. ઉપર ‘હું પાર્કિંગ ચલાવું છું’ પસંદ કરો.",
+    wrongRoleDrv: "આ ડ્રાઇવર એકાઉન્ટ છે. ઉપર ‘હું ડ્રાઇવર છું’ પસંદ કરો.",
   tabRewards: "રિવોર્ડ્સ",
   sortSpace: "સૌથી વધુ જગ્યા",
   refStep1: "મિત્રને બોલાવો",
@@ -328,6 +334,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "તમારો આમંત્રણ કોડ",
 },
   mr: {
+    wrongRoleOp: "हे ऑपरेटर खाते आहे. वर ‘मी पार्किंग चालवतो/चालवते’ निवडा.",
+    wrongRoleDrv: "हे ड्रायव्हर खाते आहे. वर ‘मी ड्रायव्हर आहे’ निवडा.",
   tabRewards: "रिवॉर्ड",
   sortSpace: "सर्वात जास्त जागा",
   refStep1: "मित्राला बोलवा",
