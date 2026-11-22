@@ -16,8 +16,15 @@ describe("roles", () => {
   it("lets platform admins into everything", () => {
     expect(canAccess("platform_admin", "admin")).toBe(true);
   });
+  it("keeps Find parking for drivers only", () => {
+    expect(canAccess("driver", "find")).toBe(true);
+    expect(canAccess("operator", "find")).toBe(false);
+    expect(canAccess("operator_admin", "find")).toBe(false);
+    expect(canAccess("platform_admin", "find")).toBe(false);
+    expect(canAccess(null, "find")).toBe(false);
+  });
   it("routes each role home", () => {
-    expect(homeFor("driver")).toBe("/driver");
+    expect(homeFor("driver")).toBe("/search");
     expect(homeFor("operator")).toBe("/operator");
     expect(homeFor("platform_admin")).toBe("/admin");
   });

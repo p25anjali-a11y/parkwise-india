@@ -6,9 +6,11 @@ test("health endpoint answers", async ({ request }) => {
   expect(await r.json()).toMatchObject({ status: "ok", service: "parkwise-web" });
 });
 
-test("home opens Find parking", async ({ page }) => {
+test("first page is the sign-in with a driver / operator choice", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/search/);
+  await expect(page).toHaveURL(/\/login/);
+  await expect(page.getByRole("button", { name: "I'm a driver" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "I run a parking place" })).toBeVisible();
 });
 
 test("invite link remembers the code and goes to sign-up", async ({ page, context }) => {
