@@ -10,10 +10,9 @@ import { gstinCheckChar, isValidGstin, normaliseGstin } from "../../lib/gstin";
 const DEMO_LOGINS = process.env.NEXT_PUBLIC_DEMO_LOGINS !== "off";
 const DEMO_PASSWORD = "ParkDemo#2026";
 const DEMOS = [
-  { email: "p25anjali@iima.ac.in", kind: "operator" as const, key: "demoAnjali" },
-  { email: "mumbai.operator@parkwise.example", kind: "operator" as const, key: "demoMumbai" },
-  { email: "ahmedabad.operator@parkwise.example", kind: "operator" as const, key: "demoAhmedabad" },
-  { email: "driver@parkwise.example", kind: "driver" as const, key: "demoDriver" },
+  { email: "mumbai.operator@parkwise.example", kind: "operator" as const, key: "demoMumbai", who: "mumbai" },
+  { email: "ahmedabad.operator@parkwise.example", kind: "operator" as const, key: "demoAhmedabad", who: "ahmedabad" },
+  { email: "driver@parkwise.example", kind: "driver" as const, key: "demoDriver", who: "driver" },
 ];
 
 /** A made-up but well-formed GSTIN (valid checksum), different each time, for demo sign-ups. Belongs to no business. */
@@ -36,6 +35,15 @@ export default function Login() {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [msg, setMsg] = useState("");
   useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "up") setMode("up"); }, []);
+
+  /** Demo shortcut: the server makes sure the demo account exists, then we sign in with it as usual. */
+  async function demo(d: (typeof DEMOS)[number]) {
+    setMsg("");
+    setEmail(d.email); setPassword(DEMO_PASSWORD); setKind(d.kind);
+    const r = await fetch("/api/demo-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ who: d.who }) }).catch(() => null);
+    if (!r || !r.ok) { const e = r ? ((await r.json().catch(() => ({}))) as { error?: string }) : {}; return setMsg(e.error ?? "Demo login is not available right now."); }
+    await submit(null, { email: d.email, password: DEMO_PASSWORD, kind: d.kind });
+  }
 
   async function submit(e: React.FormEvent | null, o?: { email: string; password: string; kind: "driver" | "operator" }) {
     e?.preventDefault();
@@ -111,9 +119,8 @@ export default function Login() {
       {DEMO_LOGINS && mode === "in" && (
         <div className="card" data-testid="demo-logins">
           <h2 style={{ marginBottom: 4 }}>{t("demoTitle")}</h2>
-          <p className="muted" style={{ marginTop: 0 }}>{t("demoHint")}</p>
           <div className="chips">
-            {DEMOS.map((d) => <button key={d.email} type="button" className="chip" style={{ minHeight: 44 }} onClick={() => { setEmail(d.email); setPassword(DEMO_PASSWORD); setKind(d.kind); void submit(null, { email: d.email, password: DEMO_PASSWORD, kind: d.kind }); }}>{t(d.key)}</button>)}
+            {DEMOS.map((d) => <button key={d.email} type="button" className="chip" style={{ minHeight: 44 }} onClick={() => void demo(d)}>{t(d.key)}</button>)}
           </div>
         </div>
       )}

@@ -16,7 +16,7 @@ test("first page is the sign-in with a driver / operator choice", async ({ page 
 test("sign-in offers forgot password and demo logins", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByTestId("forgot-link")).toBeVisible();
-  await expect(page.getByTestId("demo-logins")).toContainText("Anjali");
+  await expect(page.getByTestId("demo-logins")).toContainText("Mumbai mall operator");
   await page.getByTestId("forgot-link").click();
   await expect(page).toHaveURL(/\/auth\/forgot/);
   await expect(page.getByLabel("Email")).toBeVisible();
@@ -151,4 +151,9 @@ test("language can be switched to Hindi and Gujarati", async ({ page }) => {
   await expect(page.getByText("जगह खोजिए। दाम पहले जानिए।")).toBeVisible();
   await page.getByRole("button", { name: "ગુજરાતી" }).click();
   await expect(page.getByText("જગ્યા શોધો. ભાવ પહેલાં જાણો.")).toBeVisible();
+});
+
+test("demo login endpoint refuses unknown accounts", async ({ request }) => {
+  const r = await request.post("/api/demo-login", { data: { who: "someone-else" } });
+  expect([400, 503]).toContain(r.status());
 });
