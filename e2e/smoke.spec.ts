@@ -22,6 +22,16 @@ test("sign-in offers forgot password and demo logins", async ({ page }) => {
   await expect(page.getByLabel("Email")).toBeVisible();
 });
 
+test("password can be shown and hidden", async ({ page }) => {
+  await page.goto("/login");
+  const pw = page.locator("label.f", { hasText: "Password" }).locator("input");
+  await expect(pw).toHaveAttribute("type", "password");
+  await page.getByTestId("toggle-password").click();
+  await expect(pw).toHaveAttribute("type", "text");
+  await page.getByTestId("toggle-password").click();
+  await expect(pw).toHaveAttribute("type", "password");
+});
+
 test("theme can be switched to light and is remembered", async ({ page }) => {
   await page.goto("/login");
   const btn = page.getByTestId("theme-float");
@@ -36,7 +46,7 @@ test("operator sign-up asks for a GSTIN and rejects a bad one", async ({ page })
   await page.getByRole("button", { name: "I run a parking place" }).click();
   await expect(page.getByLabel(/GSTIN/)).toBeVisible();
   await page.getByLabel("Email").fill("owner@example.com");
-  await page.getByLabel("Password").fill("longenough1");
+  await page.locator("label.f", { hasText: "Password" }).locator("input").fill("longenough1");
   await page.getByLabel("Business name").fill("Test Mall Parking");
   await page.getByLabel(/GSTIN/).fill("27AAACP1234C1Z9");
   await page.getByRole("button", { name: "Sign up" }).click();

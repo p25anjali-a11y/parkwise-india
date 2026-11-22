@@ -1,6 +1,8 @@
 // Strings for the redesign (map-first search, live trip, rewards, operator console). Hindi, Gujarati and Marathi: please have native speakers review.
 export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>> = {
   en: {
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     demoTitle: "Demo logins",
     demoHint: "For the demo only. All data here is fake or simulated.",
     demoAnjali: "Anjali: operator + driver",
@@ -150,6 +152,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
     yourCode: "Your invite code",
   },
   hi: {
+    showPassword: "पासवर्ड दिखाएँ",
+    hidePassword: "पासवर्ड छिपाएँ",
     demoTitle: "डेमो लॉगिन",
     demoHint: "केवल डेमो के लिए। यहाँ का सारा डेटा नकली या सिम्युलेटेड है।",
     demoAnjali: "अंजलि: ऑपरेटर + ड्राइवर",
@@ -299,6 +303,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "आपका न्योता कोड",
 },
   gu: {
+    showPassword: "પાસવર્ડ બતાવો",
+    hidePassword: "પાસવર્ડ છુપાવો",
     demoTitle: "ડેમો લૉગિન",
     demoHint: "ફક્ત ડેમો માટે. અહીંનો બધો ડેટા નકલી અથવા સિમ્યુલેટેડ છે.",
     demoAnjali: "અંજલિ: ઓપરેટર + ડ્રાઇવર",
@@ -448,6 +454,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "તમારો આમંત્રણ કોડ",
 },
   mr: {
+    showPassword: "पासवर्ड दाखवा",
+    hidePassword: "पासवर्ड लपवा",
     demoTitle: "डेमो लॉगिन",
     demoHint: "फक्त डेमोसाठी. येथील सर्व डेटा बनावट किंवा सिम्युलेटेड आहे.",
     demoAnjali: "अंजली: ऑपरेटर + ड्रायव्हर",

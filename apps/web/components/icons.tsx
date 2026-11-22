@@ -7,6 +7,8 @@ const I = (d: ReactNode, size = 22) => (
 /** Line icons only (no emoji), shared by the bottom tab bar, the desktop nav and the operator sidebar. */
 export const ICON = {
   sun: I(<><circle cx="12" cy="12" r="4" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" /></>),
+  eye: I(<><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" /><circle cx="12" cy="12" r="2.8" /></>),
+  eyeOff: I(<><path d="M3 3l18 18" /><path d="M10.6 5.7A9.6 9.6 0 0 1 12 5.5C18.5 5.5 22 12 22 12a17 17 0 0 1-3.2 3.9M6.3 7.3C3.9 9 2 12 2 12s3.5 6.5 10 6.5c1.4 0 2.7-.3 3.8-.8" /><path d="M9.9 9.9a2.8 2.8 0 0 0 4.2 3.7" /></>),
   moon: I(<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />),
   search: I(<><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></>),
   live: I(<><path d="M3 15h18M5 15l1.6-5.2A2 2 0 0 1 8.5 8.4h7a2 2 0 0 1 1.9 1.4L19 15" /><circle cx="7.5" cy="17.5" r="1.5" /><circle cx="16.5" cy="17.5" r="1.5" /></>),

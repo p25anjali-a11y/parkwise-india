@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 import { LangSwitch, useT } from "../../components/I18n";
 import { Mascot } from "../../components/Mascot";
+import { PasswordInput } from "../../components/PasswordInput";
 import { gstinCheckChar, isValidGstin, normaliseGstin } from "../../lib/gstin";
 
 /** Demo shortcuts (fake data only). Hide them by setting NEXT_PUBLIC_DEMO_LOGINS=off at build time. */
@@ -110,7 +111,7 @@ export default function Login() {
           </div>
         )}
         <label className="f">{t("email")}<input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-        <label className="f">{t("password")}<input type="password" autoComplete={mode === "in" ? "current-password" : "new-password"} minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+        <label className="f">{t("password")}<PasswordInput value={password} onChange={setPassword} autoComplete={mode === "in" ? "current-password" : "new-password"} /></label>
         {mode === "up" && kind === "operator" && (
           <>
             <label className="f">{t("businessName")}<input value={orgName} onChange={(e) => setOrgName(e.target.value)} required minLength={2} maxLength={80} /></label>
