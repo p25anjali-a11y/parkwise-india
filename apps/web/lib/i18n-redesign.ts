@@ -1,6 +1,8 @@
 // Strings for the redesign (map-first search, live trip, rewards, operator console). Hindi, Gujarati and Marathi: please have native speakers review.
 export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>> = {
   en: {
+    continueBtn: "Continue",
+    signedInAs: "Signed in as {email}",
     gstinLabel: "GSTIN (15 characters)",
     gstinHelp: "Your business's GST number. An admin checks it before your lots can go live.",
     gstinBad: "That GSTIN does not look right. Check all 15 characters.",
@@ -118,6 +120,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
     yourCode: "Your invite code",
   },
   hi: {
+    continueBtn: "जारी रखें",
+    signedInAs: "{email} के रूप में साइन इन",
     gstinLabel: "GSTIN (15 अक्षर)",
     gstinHelp: "आपके व्यवसाय का GST नंबर। आपके पार्किंग स्थल लाइव होने से पहले एडमिन इसकी जाँच करता है।",
     gstinBad: "यह GSTIN सही नहीं लगता। सभी 15 अक्षर जाँचें।",
@@ -235,6 +239,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "आपका न्योता कोड",
 },
   gu: {
+    continueBtn: "ચાલુ રાખો",
+    signedInAs: "{email} તરીકે સાઇન ઇન",
     gstinLabel: "GSTIN (15 અક્ષર)",
     gstinHelp: "તમારા વ્યવસાયનો GST નંબર. તમારા પાર્કિંગ લાઇવ થાય તે પહેલાં એડમિન તેની તપાસ કરે છે.",
     gstinBad: "આ GSTIN સાચો લાગતો નથી. બધા 15 અક્ષર તપાસો.",
@@ -352,6 +358,8 @@ export const REDESIGN: Record<"en" | "hi" | "gu" | "mr", Record<string, string>>
   yourCode: "તમારો આમંત્રણ કોડ",
 },
   mr: {
+    continueBtn: "पुढे जा",
+    signedInAs: "{email} म्हणून साइन इन",
     gstinLabel: "GSTIN (15 अक्षरे)",
     gstinHelp: "तुमच्या व्यवसायाचा GST क्रमांक. तुमची पार्किंग लाइव्ह होण्यापूर्वी अॅडमिन तो तपासतो.",
     gstinBad: "हा GSTIN बरोबर वाटत नाही. सर्व 15 अक्षरे तपासा.",

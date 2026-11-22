@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Parkwise India",
     short_name: "Parkwise",
     description: "Know the price and the space before you leave.",
-    start_url: "/search",
+    start_url: "/",
     display: "standalone",
     background_color: "#0b0d12",
     theme_color: "#0b0d12",
