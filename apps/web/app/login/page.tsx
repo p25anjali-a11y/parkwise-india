@@ -17,7 +17,21 @@ export default function Login() {
   const [gstin, setGstin] = useState("");
   const [mode, setMode] = useState<"in" | "up">("in");
   const [msg, setMsg] = useState("");
+  const [me, setMe] = useState<{ email: string; home: string } | null>(null);
   useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "up") setMode("up"); }, []);
+  // Already signed in: offer to continue to your own side, or sign out to pick the other one.
+  useEffect(() => {
+    void (async () => {
+      try {
+        const sb = supabaseBrowser();
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data: p } = await sb.from("profiles").select("role").eq("id", user.id).maybeSingle();
+        const role = p?.role as string | undefined;
+        setMe({ email: user.email ?? "", home: role === "platform_admin" ? "/admin" : role === "operator" || role === "operator_admin" ? "/operator" : "/search" });
+      } catch { /* not configured */ }
+    })();
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,6 +71,15 @@ export default function Login() {
           <h1>{mode === "in" ? t("signIn") : t("createAccount")}</h1>
         </div>
       </div>
+      {me && (
+        <div className="card" data-testid="continue-card">
+          <p style={{ marginTop: 0 }}>{t("signedInAs", { email: me.email })}</p>
+          <div className="row" style={{ gap: 8 }}>
+            <a href={me.home} className="btn blue" style={{ minHeight: 44 }}>{t("continueBtn")}</a>
+            <form action="/auth/signout" method="post" style={{ margin: 0 }}><button type="submit" className="chip" style={{ minHeight: 44 }}>{t("signOut")}</button></form>
+          </div>
+        </div>
+      )}
       <form onSubmit={submit} className="card lift">
         {(
           <div className="chips" style={{ marginBottom: 12 }} role="group" aria-label="Account type">
