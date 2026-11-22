@@ -4,7 +4,7 @@ import { canAccess, homeFor, type Role } from "./lib/roles";
 
 const AREAS = {
   "/driver": "driver", "/operator": "operator", "/admin": "admin",
-  "/search": "find", "/lots": "find", "/trip": "find", "/rewards": "find", "/live": "find",
+  "/search": "find", "/lots": "find", "/trip": "find", "/rewards": "find", "/live": "find", "/pay": "find",
 } as const;
 
 export async function middleware(req: NextRequest) {
@@ -45,4 +45,4 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
-export const config = { matcher: ["/driver/:path*", "/operator/:path*", "/admin/:path*", "/search/:path*", "/lots/:path*", "/trip/:path*", "/rewards/:path*", "/live/:path*"] };
+export const config = { matcher: ["/driver/:path*", "/operator/:path*", "/admin/:path*", "/search/:path*", "/lots/:path*", "/trip/:path*", "/rewards/:path*", "/live/:path*", "/pay/:path*"] };

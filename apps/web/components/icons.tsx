@@ -22,6 +22,7 @@ export const ICON = {
   gift: I(<><rect x="4" y="9" width="16" height="11" rx="2" /><path d="M12 9v11M4 13h16M12 9c-2.5 0-4-1-4-2.5S9.2 4 10.5 4C12 4 12 6.5 12 9Zm0 0c2.5 0 4-1 4-2.5S14.8 4 13.5 4C12 4 12 6.5 12 9Z" /></>),
   list: I(<><path d="M8 6h12M8 12h12M8 18h12" /><circle cx="4" cy="6" r="0.9" /><circle cx="4" cy="12" r="0.9" /><circle cx="4" cy="18" r="0.9" /></>),
   grid: I(<><rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" /></>),
+  check: I(<><circle cx="12" cy="12" r="8.5" /><path d="m8.5 12.3 2.5 2.5 4.6-5" /></>, 44),
   locate: I(<><circle cx="12" cy="12" r="3.5" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></>),
   nav: I(<><path d="m4 11 16-7-7 16-2.2-6.8L4 11Z" /></>),
   share: I(<><circle cx="6" cy="12" r="2.2" /><circle cx="17" cy="6" r="2.2" /><circle cx="17" cy="18" r="2.2" /><path d="m8 11 7-4M8 13l7 4" /></>),

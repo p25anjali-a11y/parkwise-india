@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { quote, DEFAULT_RULES, type PricingRules } from "@parkwise/pricing";
+import { SmartBook } from "../../../components/SmartBook";
 import { QuoteForm } from "../../../components/QuoteForm";
 import { EtaButton } from "../../../components/EtaButton";
 import { availabilityNow } from "../../../lib/geo";
@@ -21,9 +22,10 @@ import { mapsDirections } from "../../../lib/map-style";
 
 export const dynamic = "force-dynamic";
 
-export default async function LotDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function LotDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ auto?: string }> }) {
   const { t, tl } = await getLang();
   const { id } = await params;
+  const { auto } = await searchParams;
   const sb = await supabaseServer();
   const { data: lot } = await sb.from("lots").select("id,name,city,address,category,lat,lng,is_synthetic,data_source,data_as_of").eq("id", id).eq("status", "approved").maybeSingle();
   if (!lot) notFound();
@@ -86,6 +88,7 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
             </div>
             <div style={{ marginTop: 12 }}><EtaButton lotId={id} /></div>
           </div>
+          <div className="card"><SmartBook lotId={id} autoStart={auto === "1"} /></div>
           <div className="card"><QuoteForm lotId={id} /></div>
           <div className="card"><AlertForm lotId={id} suggested={Math.max(1, Math.floor(q.ratePerHour / 100 - 5))} /></div>
         </div>

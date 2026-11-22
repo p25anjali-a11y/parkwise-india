@@ -157,3 +157,8 @@ test("demo login endpoint refuses unknown accounts", async ({ request }) => {
   const r = await request.post("/api/demo-login", { data: { who: "someone-else" } });
   expect([400, 503]).toContain(r.status());
 });
+
+test("payment page is guarded and never opens without a deployment", async ({ page }) => {
+  await page.goto("/pay/00000000-0000-4000-8000-000000000001");
+  await expect(page.getByText("not configured", { exact: false })).toBeVisible();
+});
