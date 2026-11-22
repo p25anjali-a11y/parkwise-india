@@ -30,7 +30,7 @@ export async function GET(req: Request) {
       liveWeatherRows(lot.city),
     ]);
     const capacity = (zones ?? []).reduce((n, z) => n + z.capacity, 0);
-    if (!capacity) return NextResponse.json({ available: false, reason: "This simulated lot has no bays." });
+    if (!capacity) return NextResponse.json({ available: false, reason: "This place has no bays listed." });
     const f = simulatedOccupancy({ lotId: lot.id, category: lot.category, at: target, rainProb: rainProbAt(wx, target), eventImpact: eventUpliftFor(events ?? [], target, 60) / 0.25 });
     const p50 = Math.round(f * capacity);
     const spread = Math.round(0.08 * capacity);

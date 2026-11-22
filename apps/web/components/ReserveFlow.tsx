@@ -77,7 +77,7 @@ export function ReserveFlow({ quoteId }: { quoteId: string }) {
   return (
     <div data-testid="hold">
       {!done && <p><strong>{t("held")} {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}</strong>. Pay ₹{(hold.totalPaise / 100).toFixed(0)} to confirm.</p>}
-      {!done && left > 0 && <button onClick={pay} className="btn green block">{t("payUpi")}{mock ? " (demo, no money moves)" : " (test mode)"}</button>}
+      {!done && left > 0 && <button onClick={pay} className="btn green block">{t("payUpi")}{mock ? "*" : " (test mode)"}</button>}
       {!done && left === 0 && <p>Your hold expired. Get a new price to try again.</p>}
       {msg && <p role="status">{msg}</p>}
     </div>

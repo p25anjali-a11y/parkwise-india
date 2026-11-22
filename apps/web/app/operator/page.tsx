@@ -88,18 +88,17 @@ export default async function Operator({ searchParams }: { searchParams: Promise
       <div className="kpis" data-testid="op-kpis">
         <div className="kpi"><div className="k">{t("kLots")}</div><div className="v">{(lots ?? []).filter((l) => l.status === "approved").length}</div><div className="s">{t("kLotsNote", { n: (lots ?? []).length })}</div></div>
         <div className="kpi"><div className="k">{t("kInNow")}</div><div className="v">{cap ? `${occ}/${cap}` : "—"}</div><div className="s">{cap ? `${Math.round((occ / cap) * 100)}% ${t("fullNow")}` : t("noFeedYet")}</div></div>
-        <div className="kpi"><div className="k">{t("kGross7")}</div><div className="v">{rupees(simWeek ? simWeek.grossPaise : week.grossPaise)}</div><div className="s">{simWeek ? `${t("kBookingsN", { n: simWeek.bookings })} · ${t("simulatedBadge")}` : t("kBookingsN", { n: week.confirmed })}</div></div>
+        <div className="kpi"><div className="k">{t("kGross7")}</div><div className="v">{rupees(simWeek ? simWeek.grossPaise : week.grossPaise)}</div><div className="s">{simWeek ? `${t("kBookingsN", { n: simWeek.bookings })}${t("simulatedBadge")}` : t("kBookingsN", { n: week.confirmed })}</div></div>
         <div className="kpi"><div className="k">{t("kArriving")}</div><div className="v">{(soon ?? []).length}</div><div className="s">{t("kNext2h")}</div></div>
       </div>
       {lots.length === 0 && <div className="card" data-testid="no-lots">{t("noLotsYet")}</div>}
       {liveLot && (
         <section data-testid="live-lot-section" style={{ marginBottom: 12 }}>
-          <h2>{t("liveLotTitle")} <span className="pill demo">{t("simulatedBadge")}</span></h2>
+          <h2>{t("liveLotTitle")} <span className="sim-mark">{t("simulatedBadge")}</span></h2>
           {simLots.length > 1 && <div className="chips" style={{ marginBottom: 8 }}>{simLots.map((l) => <Link key={l.id} href={`/operator?lot=${l.id}`} className={l.id === liveLot.id ? "chip on" : "chip"}>{l.name}</Link>)}</div>}
           <LiveLotSim key={liveLot.id} lotId={liveLot.id} capacity={capOf(liveLot)} initial={simulatedOccupancy({ lotId: liveLot.id, category: liveLot.category, at: new Date() })} simulated city={liveLot.city} />
         </section>
       )}
-      {liveRows.some((l) => l.is_synthetic) && <p className="muted" data-testid="sim-note">{t("simulatedNote")}</p>}
       {alerts.length > 0 && (
         <section aria-label="Alerts" data-testid="alerts" className="card">
           <h2>{t("alertsTitle")}</h2>
@@ -113,7 +112,7 @@ export default async function Operator({ searchParams }: { searchParams: Promise
             <h2>{t("revenueForecast")}</h2>
             <div className="tblwrap"><table className="tbl">
               <thead><tr><th>{t("lotCol")}</th><th className="r">{t("expected")}</th></tr></thead>
-              <tbody>{forecasts.map((f) => <tr key={f.name}><td>{f.name}{f.simulated ? " (demo)" : ""}</td><td className="r">{rupees(f.totalPaise)}</td></tr>)}</tbody>
+              <tbody>{forecasts.map((f) => <tr key={f.name}><td>{f.name}{f.simulated ? "*" : ""}</td><td className="r">{rupees(f.totalPaise)}</td></tr>)}</tbody>
             </table></div>
             <p className="muted" style={{ marginBottom: 0 }}>{t("revenueNote")}</p>
           </section>

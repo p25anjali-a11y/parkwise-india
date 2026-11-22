@@ -1,5 +1,7 @@
 # Status: what is real, what is mocked, what is missing
 
+**Update, 23 Nov 2026 (later).** Team decision: the UI no longer says "simulated", "demo" or "sample". Every simulated figure (demo-lot occupancy, availability, simulated revenue and bookings, gate feed, mock payment button) is marked with a bare "*" instead. The data itself is unchanged and still simulated. Organisation names stored in the database (for example "(Demo operator)") are data, not UI text, and are unchanged.
+
 **Update, 23 Nov 2026.** The demo login buttons and the `/api/demo-login` endpoint are removed. The sign-in page now has **Continue as guest**: a private Supabase anonymous session with an ordinary driver profile (driver side only; guests cannot register a business). It needs **Authentication → Sign In / Providers → Allow anonymous sign-ins** switched on in Supabase; until then the button shows a "not switched on yet" message. Guest data is lost when the guest signs out. `seed/demo_accounts.sql` still works for anyone who wants the demo operator accounts, signing in normally.
 
 **Update, 22 Nov 2026 (evening).** Sign-in is the first page (driver or operator). Operators give a GSTIN and an admin verifies them (migration 0011, not yet applied). Operator screens only show the operator's own organisation. Demo accounts: `seed/demo_accounts.sql`.

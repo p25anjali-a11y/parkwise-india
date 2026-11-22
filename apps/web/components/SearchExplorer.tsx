@@ -149,7 +149,6 @@ export function SearchExplorer({ lots, centre, city, cities }: { lots: ExplorerL
         </div>
         {geoErr && <p role="alert" className="err">{geoErr}</p>}
         <div className="xhead"><span className="muted">{t("placesCount", { n: shown.length })}</span></div>
-        <p className="muted" style={{ marginTop: 0 }}>{t("simulatedNote")}</p>
         {shown.length === 0 && <div className="card">{t("noResults")}</div>}
         {shown.map((r) => (
           <div key={r.id} id={`lot-${r.id}`} data-testid="result" className={r.id === sel ? "lotrow sel" : "lotrow"} role="button" tabIndex={0} aria-pressed={r.id === sel}
@@ -160,7 +159,7 @@ export function SearchExplorer({ lots, centre, city, cities }: { lots: ExplorerL
             </div>
             <div className="meta">{r.category} · {r.d.toFixed(1)} {me ? t("kmFromYou") : t("nearCentre")}</div>
             <span className={`pill ${toneOf(r.label) === "good" ? "green" : toneOf(r.label) === "warn" ? "orange" : toneOf(r.label) === "bad" ? "red" : "grey"}`}>{tl(r.label)}</span>{" "}
-            {r.simulated && <span className="pill demo">{t("simulatedBadge")}</span>} {r.hasEv && <span className="pill orange">EV</span>} {r.rate === cheapest && <span className="pill green">{t("cheaper")}</span>}
+            {r.simulated && <span className="sim-mark">{t("simulatedBadge")}</span>} {r.hasEv && <span className="pill orange">EV</span>} {r.rate === cheapest && <span className="pill green">{t("cheaper")}</span>}
             <div className="acts">
               <Link href={`/lots/${r.id}`} className="btn" onClick={(e) => e.stopPropagation()}>{t("viewLot")}</Link>
               <a href={mapsDirections(r.lat, r.lng)} target="_blank" rel="noopener noreferrer" className="chip" onClick={(e) => e.stopPropagation()}>{ICON.nav}&nbsp;{t("directions")}</a>

@@ -27,7 +27,7 @@ export function AvailabilityRange({ occupancy, capacity, simulated }: { occupanc
       <div className="rangebar" role="img" aria-label={t("rangeFull", { lo: r.loPct, hi: r.hiPct })}>
         <div className="band" style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
       </div>
-      <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>{t("rangeNote")}{simulated ? ` ${t("simulatedBadge")}.` : ""}</p>
+      <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>{t("rangeNote")}{simulated ? ` ${t("simulatedBadge")}` : ""}</p>
     </div>
   );
 }

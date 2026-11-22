@@ -37,7 +37,7 @@ export function LiveLots({ lots }: { lots: LotRow[] }) {
         const p = s ? pct(s) : 0;
         return (
           <div key={l.id} data-testid="lot-card" className="card">
-            <div className="rowb"><Link href={`/operator/lots/${l.id}`}><strong>{l.name}</strong></Link><span>{s?.is_synthetic && <span className="pill demo">{t("simulatedBadge")}</span>} <span className={`pill ${l.status === "approved" ? "green" : "grey"}`}>{l.status}</span></span></div>
+            <div className="rowb"><Link href={`/operator/lots/${l.id}`}><strong>{l.name}</strong></Link><span>{s?.is_synthetic && <span className="sim-mark">{t("simulatedBadge")}</span>} <span className={`pill ${l.status === "approved" ? "green" : "grey"}`}>{l.status}</span></span></div>
             <div className="muted" style={{ margin: "2px 0 10px" }}>{l.city} · {l.category}</div>
             <div className="bar"><div style={{ width: `${p}%`, background: p >= 90 ? "var(--bad)" : p >= 70 ? "var(--warn)" : "var(--good)" }} /></div>
             <p style={{ margin: "8px 0 0" }}>{s ? <>{s.occupied}/{s.capacity} cars ({p}%)</> : <span className="muted">No live feed yet</span>}</p>

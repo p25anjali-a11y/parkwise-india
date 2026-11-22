@@ -3,7 +3,8 @@
  * read from the real clock (IST), the real rain probability and real event windows, so simulated lots react to
  * live weather and events while their parking counts are invented. Real lots never use this.
  */
-export const SIMULATION_LABEL = "SIMULATED occupancy (not real data)";
+/** Shown to users as the occupancy source. The team marks simulated figures with "*" only (see CLAUDE.md rule 1). */
+export const SIMULATION_LABEL = "Occupancy forecast*";
 export const SIMULATION_MODEL = "simulated-v1";
 
 const IST_MS = 330 * 60_000;

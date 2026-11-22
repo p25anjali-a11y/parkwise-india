@@ -47,7 +47,7 @@ export function ArrivalPreview({ lotId, me, onLocate }: { lotId: string; me: { l
         <span><b>{eta.minutes} {t("minutes")}</b> · {eta.km} km</span>
         <span className="muted">{t("arriveBy", { time: arrive })}</span>
       </div>
-      {av && av.available && hi > 0 && <p style={{ margin: "4px 0 0" }}>{t("spacesThen", { lo, hi })}{av.simulated ? <> <span className="pill demo">{t("simulatedBadge")}</span></> : null}</p>}
+      {av && av.available && hi > 0 && <p style={{ margin: "4px 0 0" }}>{t("spacesThen", { lo, hi })}{av.simulated ? <> <span className="sim-mark">{t("simulatedBadge")}</span></> : null}</p>}
       <Link href={`/trip/${lotId}`} className="btn blue block" style={{ minHeight: 44, marginTop: 8 }}>{ICON.nav}&nbsp;{t("startNav")}</Link>
     </div>
   );

@@ -67,7 +67,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
       </div>
       <div className="card"><h2>{t("dailyGross")}</h2><BarChart data={(useSim ? simDaily : daily).map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("dailyGross")} format={(n) => `₹${n.toLocaleString("en-IN")}`} /></div>
       {simDaily.length > 0 && (
-        <div className="card" data-testid="sim-revenue"><h2>{t("simRevenue")} <span className="pill demo">{t("simulatedBadge")}</span></h2>
+        <div className="card" data-testid="sim-revenue"><h2>{t("simRevenue")} <span className="sim-mark">{t("simulatedBadge")}</span></h2>
           <BarChart data={simDaily.map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("simRevenue")} format={(n) => `₹${n.toLocaleString("en-IN")}`} />
           <p className="muted" style={{ marginBottom: 0 }}>{t("simRevenueNote")}</p></div>
       )}

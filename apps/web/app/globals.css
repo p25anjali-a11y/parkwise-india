@@ -273,3 +273,6 @@ html[data-theme="light"] .pin.sel { box-shadow: 0 0 0 3px var(--gold), 0 4px 14p
 .gatefeed li.out .dir { color: var(--warn); }
 @keyframes gatein { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .gatefeed li { animation: none; } }
+
+/* Marks simulated figures. The team uses a bare asterisk instead of a "simulated" label (CLAUDE.md rule 1). */
+.sim-mark { color: var(--gold); font-weight: 600; margin-left: 2px; }

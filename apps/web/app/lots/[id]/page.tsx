@@ -59,11 +59,10 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
               <span className="price">₹{rupees}<small style={{ fontSize: 14 }}>{t("perHour")}</small></span>
               <span className={`pill ${tone}`}>{tl(label)}</span>
             </div>
-            <p style={{ margin: "8px 0 0" }}><span className="pill demo">{tl(q.label)}</span> {occ.simulated && <span className="pill demo">{t("simulatedBadge")}</span>}</p>
+            <p style={{ margin: "8px 0 0" }}><span className="pill demo">{tl(q.label)}</span> {occ.simulated && <span className="sim-mark">{t("simulatedBadge")}</span>}</p>
             {occ.value !== null && capacity > 0 && (
               <div style={{ marginTop: 12 }}><AvailabilityRange occupancy={occ.value} capacity={capacity} simulated={occ.simulated} /></div>
             )}
-            {occ.simulated && <p role="note" className="muted" style={{ marginBottom: 0 }}>{t("simulatedNote")}</p>}
             {occ.value === null && <p className="muted" style={{ marginBottom: 0 }}>{t("noLiveExplain")}</p>}
             {lot.data_source && <p className="muted" style={{ marginBottom: 0 }}>Lot details from {lot.data_source}, as of {lot.data_as_of}.</p>}
           </div>

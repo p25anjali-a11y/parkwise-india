@@ -45,7 +45,7 @@ export default async function OperatorReservations({ searchParams }: { searchPar
       <div className="card" data-testid="op-reservations">
         {(data ?? []).length === 0 && simRows.length > 0 ? (
           <>
-            <p style={{ marginTop: 0 }}><span className="pill demo">{t("simulatedBadge")}</span> <span className="muted">{t("simBookingsNote")}</span></p>
+            <p style={{ marginTop: 0 }}><span className="sim-mark">{t("simulatedBadge")}</span></p>
             <div className="tblwrap"><table className="tbl" data-testid="sim-bookings">
               <thead><tr><th>{t("arrival")}</th><th>{t("lotCol")}</th><th className="r">{t("hoursCol")}</th><th className="r">{t("amountCol")}</th><th>{t("statusCol")}</th></tr></thead>
               <tbody>{simRows.map((r) => (

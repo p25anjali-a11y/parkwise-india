@@ -36,10 +36,10 @@ describe("simulatedOccupancy", () => {
 
 describe("resolveOccupancy", () => {
   const base = { forecast: null, live: null, arrival: satEve, now: satEve };
-  it("labels simulated lots as simulated", () => {
+  it("marks simulated lots with an asterisk", () => {
     const r = resolveOccupancy({ ...base, lot: { id: "s", category: "mall", is_synthetic: true } });
     expect(r.simulated).toBe(true);
-    expect(r.input.source).toMatch(/SIMULATED/);
+    expect(r.input.source).toMatch(/\*$/);
     expect(r.value).not.toBeNull();
   });
   it("never simulates for a real lot: no data means null", () => {
