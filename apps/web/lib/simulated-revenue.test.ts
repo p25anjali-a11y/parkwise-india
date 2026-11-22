@@ -28,3 +28,26 @@ describe("simulatedDailyGross", () => {
     expect(big).toBeGreaterThan(small * 5);
   });
 });
+
+import { simulatedBookings, simulatedHourlyProfile, simulatedSummary } from "./simulated-revenue";
+
+describe("simulated summary, profile and bookings", () => {
+  it("summarises days into gross, bookings (2-hour stays) and average", () => {
+    expect(simulatedSummary([{ paise: 200_000, bayHours: 40 }, { paise: 100_000, bayHours: 20 }])).toEqual({ grossPaise: 300_000, bookings: 30, avgPaise: 10_000 });
+    expect(simulatedSummary([])).toEqual({ grossPaise: 0, bookings: 0, avgPaise: 0 });
+  });
+  it("gives 24 hourly occupancy fractions, busier in the evening than at 4am for a mall", () => {
+    const p = simulatedHourlyProfile([{ id: "lot-1", category: "mall" }], 7, now);
+    expect(p).toHaveLength(24);
+    expect(p[19]!).toBeGreaterThan(p[4]!);
+  });
+  it("makes a deterministic list of bookings with integer paise and valid statuses", () => {
+    const a = simulatedBookings({ ...base, lotName: "Test Mall", count: 8 });
+    expect(a).toHaveLength(8);
+    expect(simulatedBookings({ ...base, lotName: "Test Mall", count: 8 })).toEqual(a);
+    for (const b of a) {
+      expect(Number.isInteger(b.total_paise)).toBe(true);
+      expect(["completed", "checked_in", "confirmed", "cancelled"]).toContain(b.status);
+    }
+  });
+});

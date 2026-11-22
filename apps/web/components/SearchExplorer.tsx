@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { haversineKm } from "../lib/geo";
 import { OSM_STYLE, mapsDirections, toneOf } from "../lib/map-style";
 import { useT } from "./I18n";
+import { ArrivalPreview } from "./ArrivalPreview";
 import { ICON } from "./icons";
 
 export type ExplorerLot = {
@@ -125,6 +126,7 @@ export function SearchExplorer({ lots, centre, city, cities }: { lots: ExplorerL
               <span className={`pill ${toneOf(selected.label) === "good" ? "green" : toneOf(selected.label) === "warn" ? "orange" : toneOf(selected.label) === "bad" ? "red" : "grey"}`}>{tl(selected.label)}</span>
               <Link href={`/lots/${selected.id}`} className="btn" style={{ minHeight: 44 }}>{t("viewLot")}</Link>
             </div>
+            <ArrivalPreview lotId={selected.id} me={me} onLocate={nearMe} />
           </div>
         )}
       </section>

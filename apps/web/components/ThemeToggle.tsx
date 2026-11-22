@@ -23,9 +23,10 @@ export function ThemeToggle({ variant }: { variant: "float" | "inbar" }) {
     window.dispatchEvent(new Event("pw-theme"));
   }
   const label = theme === "dark" ? t("themeLight") : t("themeDark");
+  const short = theme === "dark" ? t("themeLightLabel") : t("themeDarkLabel");
   return (
     <button type="button" className={`themebtn ${variant}`} onClick={flip} aria-label={label} title={label} data-testid={`theme-${variant}`}>
-      {theme === "dark" ? ICON.sun : ICON.moon}
+      {theme === "dark" ? ICON.sun : ICON.moon}<span className="themelbl">{short}</span>
     </button>
   );
 }
