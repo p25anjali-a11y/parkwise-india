@@ -14,6 +14,9 @@ import { BestTime } from "../../../components/BestTime";
 import { AlertForm } from "../../../components/AlertForm";
 import { WaitlistButton } from "../../../components/WaitlistButton";
 import { loadSeries } from "../../../lib/lot-series";
+import { MiniMap } from "../../../components/MiniMap";
+import { ICON } from "../../../components/icons";
+import { mapsDirections } from "../../../lib/map-style";
 
 export const dynamic = "force-dynamic";
 
@@ -41,35 +44,57 @@ export default async function LotDetail({ params }: { params: Promise<{ id: stri
   const nearlyFull = occ.value !== null && occ.value >= 0.9;
   const label = occ.value === null ? "No live availability" : availabilityNow(Math.round(occ.value * 100), 100);
   const tone = label === "Nearly full" ? "red" : label === "Tight" ? "orange" : label === "Likely space" ? "green" : "grey";
+  const rupees = Math.round(q.ratePerHour / 100);
   return (
-    <main className="shell">
+    <main className="shell lotpage">
       <div className="top">
-        <p style={{ margin: 0 }}><Link href="/search" style={{ color: "#fff" }}>← {t("back")}</Link></p>
+        <p style={{ margin: 0 }}><Link href="/search">← {t("back")}</Link></p>
         <h1 style={{ marginTop: 8 }}>{lot.name}</h1>
         <p>{lot.address ?? lot.city} · {lot.category}</p>
       </div>
-      <div className="card lift">
-        <div className="rowb">
-          <span className="price">₹{(q.ratePerHour / 100).toFixed(0)}<small style={{ fontSize: 14 }}>{t("perHour")}</small></span>
-          <span className={`pill ${tone}`}>{tl(label)}</span>
+      <div className="lotgrid">
+        <div>
+          <div className="card lift">
+            <div className="hero-price">
+              <span className="price">₹{rupees}<small style={{ fontSize: 14 }}>{t("perHour")}</small></span>
+              <span className={`pill ${tone}`}>{tl(label)}</span>
+            </div>
+            <p style={{ margin: "8px 0 0" }}><span className="pill demo">{tl(q.label)}</span> {occ.simulated && <span className="pill demo">{t("simulatedBadge")}</span>}</p>
+            {occ.value !== null && capacity > 0 && (
+              <div className="statrow">
+                <div><b>{Math.max(0, Math.round(capacity * (1 - occ.value)))}</b><span>{t("freeNow")}</span></div>
+                <div><b>{Math.round(occ.value * 100)}%</b><span>{t("fullNow")}</span></div>
+                <div><b>{capacity}</b><span>{t("totalBays")}</span></div>
+              </div>
+            )}
+            {occ.simulated && <p role="note" className="muted" style={{ marginBottom: 0 }}>{t("simulatedNote")}</p>}
+            {!occ.simulated && occ.value !== null && live && <p className="muted" style={{ marginBottom: 0 }}>{live.occupied}/{live.capacity} · {new Date(live.updated_at).toLocaleTimeString("en-IN")}</p>}
+            {occ.value === null && <p className="muted" style={{ marginBottom: 0 }}>{t("noLiveExplain")}</p>}
+            {lot.data_source && <p className="muted" style={{ marginBottom: 0 }}>Lot details from {lot.data_source}, as of {lot.data_as_of}.</p>}
+          </div>
+          {occ.value !== null && capacity > 0 && <LiveLotSim lotId={id} capacity={capacity} initial={occ.value} simulated={occ.simulated} />}
+          {nearlyFull && <div className="card" data-testid="waitlist"><h2>{t("waitTitle")}</h2><p className="muted">{t("waitSub")}</p><WaitlistButton lotId={id} joined={!!wl} /></div>}
+          {evBays > 0 && <div className="card" data-testid="ev-bays"><h2>{t("evBays")}</h2><p style={{ marginBottom: 0 }}><span className="price">{evBays}</span> {occ.value !== null && <span className="muted">· ~{Math.max(0, Math.round(evBays * (1 - occ.value)))} {t("evEst")}</span>}</p></div>}
+          {ser && <BestTime series={ser.series} t={t} />}
+          <div className="card">
+            <h2>{t("whyPrice")}</h2>
+            <ol className="steps">{q.breakdown.map((s, i) => <li key={i}><span>{s.label}</span><strong>{s.multiplier.toFixed(2)}x</strong></li>)}</ol>
+            <p className="muted" style={{ marginBottom: 0 }}>Inputs: {q.inputs.map((i) => `${i.name} ${i.status}${i.source ? ` (${i.source})` : ""}`).join("; ")}.</p>
+          </div>
         </div>
-        <p style={{ margin: "8px 0 0" }}><span className="pill demo">{tl(q.label)}</span> {occ.simulated && <span className="pill demo">{t("simulatedBadge")}</span>}</p>
-        {occ.simulated && <p role="note" className="muted" style={{ marginBottom: 0 }}>{t("simulatedNote")}</p>}
-        {!occ.simulated && occ.value !== null && live && <p className="muted" style={{ marginBottom: 0 }}>{live.occupied}/{live.capacity} · {new Date(live.updated_at).toLocaleTimeString("en-IN")}</p>}
-        {occ.value === null && <p className="muted" style={{ marginBottom: 0 }}>No live availability: this lot has no fresh occupancy count</p>}
-        {lot.data_source && <p className="muted" style={{ marginBottom: 0 }}>Lot details from {lot.data_source}, as of {lot.data_as_of}.</p>}
-      </div>
-      {occ.value !== null && capacity > 0 && <LiveLotSim lotId={id} capacity={capacity} initial={occ.value} simulated={occ.simulated} />}
-      {nearlyFull && <div className="card" data-testid="waitlist"><h2>⏳ {t("waitTitle")}</h2><p className="muted">{t("waitSub")}</p><WaitlistButton lotId={id} joined={!!wl} /></div>}
-      {evBays > 0 && <div className="card" data-testid="ev-bays"><h2>{t("evBays")}</h2><p style={{ marginBottom: 0 }}><span className="price">{evBays}</span> {occ.value !== null && <span className="muted">· ~{Math.max(0, Math.round(evBays * (1 - occ.value)))} {t("evEst")}</span>}</p></div>}
-      {ser && <BestTime series={ser.series} t={t} />}
-      <div className="card"><EtaButton lotId={id} /></div>
-      <div className="card"><QuoteForm lotId={id} /></div>
-      <div className="card"><AlertForm lotId={id} suggested={Math.max(1, Math.floor(q.ratePerHour / 100 - 5))} /></div>
-      <div className="card">
-        <h2>{t("whyPrice")}</h2>
-        <ol className="steps">{q.breakdown.map((s, i) => <li key={i}><span>{s.label}</span><strong>{s.multiplier.toFixed(2)}x</strong></li>)}</ol>
-        <p className="muted" style={{ marginBottom: 0 }}>Inputs: {q.inputs.map((i) => `${i.name} ${i.status}${i.source ? ` (${i.source})` : ""}`).join("; ")}.</p>
+        <div className="side">
+          <MiniMap lat={lot.lat} lng={lot.lng} label={label} rate={q.ratePerHour} name={lot.name} />
+          <div className="card">
+            <h2>{t("getThere")}</h2>
+            <div style={{ display: "grid", gap: 8 }}>
+              <Link href={`/trip/${id}`} className="btn block" data-testid="start-trip">{ICON.nav}&nbsp;{t("startTrip")}</Link>
+              <a href={mapsDirections(lot.lat, lot.lng)} target="_blank" rel="noopener noreferrer" className="btn ghost block">{t("openInMaps")}</a>
+            </div>
+            <div style={{ marginTop: 12 }}><EtaButton lotId={id} /></div>
+          </div>
+          <div className="card"><QuoteForm lotId={id} /></div>
+          <div className="card"><AlertForm lotId={id} suggested={Math.max(1, Math.floor(q.ratePerHour / 100 - 5))} /></div>
+        </div>
       </div>
     </main>
   );

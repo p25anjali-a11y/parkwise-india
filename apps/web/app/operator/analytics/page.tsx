@@ -1,44 +1,76 @@
 import Link from "next/link";
+import { BarChart, HourChart } from "../../../components/charts";
+import { ICON } from "../../../components/icons";
 import { hourlyProfile, pricingSummary, reservationSummary } from "../../../lib/analytics";
+import { dailyGross } from "../../../lib/csv-export";
+import { getLang } from "../../../lib/lang";
+import { rupees } from "../../../lib/referral";
 import { supabaseServer } from "../../../lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function Analytics({ searchParams }: { searchParams: Promise<{ lot?: string }> }) {
-  const { lot: lotId } = await searchParams;
+export default async function Analytics({ searchParams }: { searchParams: Promise<{ lot?: string; days?: string }> }) {
+  const { t } = await getLang();
+  const sp = await searchParams;
+  const days = [7, 14, 30].includes(Number(sp.days)) ? Number(sp.days) : 30;
   const sb = await supabaseServer();
   const { data: lots } = await sb.from("lots").select("id,name").order("name");
-  const lot = (lots ?? []).find((l) => l.id === lotId) ?? (lots ?? [])[0];
-  if (!lot) return <main style={{ padding: 24 }}>No lots yet.</main>;
-
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  if (!lots || lots.length === 0) return <main className="shell"><div className="top"><h1>{t("opRevenue")}</h1></div><div className="card">{t("noLotsYet")}</div></main>;
+  const lot = sp.lot && sp.lot !== "all" ? lots.find((l) => l.id === sp.lot) : undefined;
+  const ids = lot ? [lot.id] : lots.map((l) => l.id);
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
   const [snaps, res, quotes] = await Promise.all([
-    sb.from("capacity_snapshots").select("captured_at,occupied,capacity").eq("lot_id", lot.id).gte("captured_at", since).order("captured_at").limit(3000),
-    sb.from("reservations").select("status,total_paise,duration_min").eq("lot_id", lot.id).gte("created_at", since),
-    sb.from("price_quotes").select("multiplier").eq("lot_id", lot.id).gte("created_at", since).limit(5000),
+    sb.from("capacity_snapshots").select("captured_at,occupied,capacity").in("lot_id", ids).gte("captured_at", since).order("captured_at").limit(5000),
+    sb.from("reservations").select("lot_id,status,total_paise,duration_min,created_at").in("lot_id", ids).gte("created_at", since).limit(5000),
+    sb.from("price_quotes").select("multiplier").in("lot_id", ids).gte("created_at", since).limit(5000),
   ]);
-  const profile = hourlyProfile(snaps.data ?? []);
-  const rs = reservationSummary(res.data ?? []);
+  const rows = res.data ?? [];
+  const rs = reservationSummary(rows);
   const ps = pricingSummary((quotes.data ?? []).map((q) => ({ multiplier: Number(q.multiplier) })));
+  const profile = hourlyProfile(snaps.data ?? []);
+  const daily = dailyGross(rows, days);
+  const avg = rs.confirmed ? rs.grossPaise / rs.confirmed : 0;
+  const perLot = lots.map((l) => ({ l, s: reservationSummary(rows.filter((r) => r.lot_id === l.id)) })).filter((x) => x.s.reservations > 0).sort((a, b) => b.s.grossPaise - a.s.grossPaise);
+  const href = (o: { lot?: string; days?: number }) => `/operator/analytics?lot=${o.lot ?? sp.lot ?? "all"}&days=${o.days ?? days}`;
   return (
-    <main style={{ maxWidth: 820, margin: "0 auto", padding: 24 }}>
-      <p><Link href="/operator">← Your lots</Link></p>
-      <h1>Analytics: {lot.name}</h1>
-      <nav style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{(lots ?? []).map((l) => <Link key={l.id} href={`/operator/analytics?lot=${l.id}`} style={{ fontWeight: l.id === lot.id ? 700 : 400 }}>{l.name}</Link>)}</nav>
-      <h2>Average occupancy by hour (last 30 days, IST)</h2>
-      <svg role="img" aria-label="Average occupancy by hour of day" viewBox="0 0 480 140" style={{ width: "100%", maxWidth: 560 }}>
-        {profile.map((v, h) => (
-          <g key={h}>
-            <rect x={h * 20 + 2} y={120 - (v ?? 0) * 110} width={16} height={(v ?? 0) * 110} fill={v == null ? "#ddd" : v >= 0.9 ? "#c0392b" : v >= 0.7 ? "#e67e22" : "#27ae60"} />
-            {h % 3 === 0 && <text x={h * 20 + 10} y={134} fontSize={9} textAnchor="middle">{h}</text>}
-          </g>
-        ))}
-      </svg>
-      <h2>Reservations (last 30 days)</h2>
-      <p>{rs.reservations} total · {rs.confirmed} confirmed · {rs.cancelledOrExpired} cancelled or expired · conversion {rs.conversionPct ?? "n/a"}{rs.conversionPct != null ? "%" : ""}</p>
-      <p>Gross paid: ₹{(rs.grossPaise / 100).toFixed(0)} <span style={{ fontSize: 13, color: "#555" }}>(before refunds and platform fees; test payments included)</span></p>
-      <h2>Pricing (last 30 days)</h2>
-      <p>{ps.count} quotes · mean multiplier {ps.meanMultiplier ?? "n/a"} · {ps.peakSharePct ?? "n/a"}{ps.peakSharePct != null ? "%" : ""} priced above standard</p>
+    <main className="shell">
+      <div className="top rowb">
+        <div><h1>{t("opRevenue")}</h1><p>{lot ? lot.name : t("allLots")} · {t("lastDays", { n: days })}</p></div>
+        <a className="btn ghost" href={`/api/operator/export?lot=${lot?.id ?? "all"}&days=${days}`}>{ICON.download}&nbsp;{t("exportCsv")}</a>
+      </div>
+      <div className="chips" style={{ marginBottom: 8 }}>
+        <Link href={href({ lot: "all" })} className={!lot ? "chip on" : "chip"}>{t("allLots")}</Link>
+        {lots.map((l) => <Link key={l.id} href={href({ lot: l.id })} className={lot?.id === l.id ? "chip on" : "chip"}>{l.name}</Link>)}
+      </div>
+      <div className="chips" style={{ marginBottom: 14 }}>
+        {[7, 14, 30].map((d) => <Link key={d} href={href({ days: d })} className={d === days ? "chip on" : "chip"}>{t("lastDays", { n: d })}</Link>)}
+      </div>
+      <div className="kpis" data-testid="revenue-kpis">
+        <div className="kpi"><div className="k">{t("kGross")}</div><div className="v">{rupees(rs.grossPaise)}</div><div className="s">{t("kGrossNote")}</div></div>
+        <div className="kpi"><div className="k">{t("kBookings")}</div><div className="v">{rs.confirmed}</div><div className="s">{t("kOfTotal", { n: rs.reservations })}</div></div>
+        <div className="kpi"><div className="k">{t("kAvg")}</div><div className="v">{rupees(Math.round(avg))}</div><div className="s">{t("kPerBooking")}</div></div>
+        <div className="kpi"><div className="k">{t("kConv")}</div><div className="v">{rs.conversionPct ?? "—"}{rs.conversionPct !== null ? "%" : ""}</div><div className="s">{t("kLost", { n: rs.cancelledOrExpired })}</div></div>
+      </div>
+      <div className="card"><h2>{t("dailyGross")}</h2><BarChart data={daily.map((d) => ({ label: d.day.slice(5), value: Math.round(d.paise / 100) }))} label={t("dailyGross")} format={(n) => `₹${n.toLocaleString("en-IN")}`} /></div>
+      <div className="grid2">
+        <div className="card"><h2>{t("occByHour")}</h2><HourChart profile={profile} /></div>
+        <div className="card">
+          <h2>{t("pricingTitle")}</h2>
+          <div className="rowb"><span className="muted">{t("quotesCount")}</span><strong>{ps.count}</strong></div>
+          <div className="rowb"><span className="muted">{t("meanMult")}</span><strong>{ps.meanMultiplier ?? "—"}</strong></div>
+          <div className="rowb"><span className="muted">{t("aboveStd")}</span><strong>{ps.peakSharePct ?? "—"}{ps.peakSharePct !== null ? "%" : ""}</strong></div>
+        </div>
+      </div>
+      {!lot && perLot.length > 0 && (
+        <div className="card" style={{ marginTop: 12 }}>
+          <h2>{t("perLot")}</h2>
+          <div className="tblwrap"><table className="tbl">
+            <thead><tr><th>{t("lotCol")}</th><th className="r">{t("kBookings")}</th><th className="r">{t("kConv")}</th><th className="r">{t("kGross")}</th></tr></thead>
+            <tbody>{perLot.map(({ l, s }) => <tr key={l.id}><td><Link href={`/operator/lots/${l.id}`}>{l.name}</Link></td><td className="r">{s.confirmed}</td><td className="r">{s.conversionPct ?? "—"}{s.conversionPct !== null ? "%" : ""}</td><td className="r">{rupees(s.grossPaise)}</td></tr>)}</tbody>
+          </table></div>
+        </div>
+      )}
+      <p className="muted">{t("grossFootnote")}</p>
     </main>
   );
 }

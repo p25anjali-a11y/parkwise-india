@@ -10,5 +10,5 @@ export function WaitlistButton({ lotId, joined }: { lotId: string; joined: boole
     const r = await fetch("/api/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lotId }) });
     if (r.ok) setOn(true); else setMsg(r.status === 401 ? t("signInFirst") : (await r.json()).error ?? "Error");
   }
-  return on ? <p><span className="pill green">⏳ {t("waitJoined")}</span></p> : <><button type="button" className="btn blue block" onClick={join}>⏳ {t("waitJoin")}</button>{msg && <p role="alert" className="err">{msg}</p>}</>;
+  return on ? <p><span className="pill green">{t("waitJoined")}</span></p> : <><button type="button" className="btn blue block" onClick={join}>{t("waitJoin")}</button>{msg && <p role="alert" className="err">{msg}</p>}</>;
 }

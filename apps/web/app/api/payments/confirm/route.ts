@@ -3,6 +3,7 @@ import { configuredOr503 } from "../../../../lib/env";
 import { limited } from "../../../../lib/rate-limit";
 import { z } from "zod";
 import { selectPaymentProvider } from "@parkwise/providers";
+import { REFERRAL_GET_PAISE, REFERRAL_GIVE_PAISE, REFERRAL_MIN_BOOKING_PAISE } from "../../../../lib/referral";
 import { supabaseAdmin } from "../../../../lib/supabase/admin";
 import { supabaseServer } from "../../../../lib/supabase/server";
 
@@ -31,5 +32,9 @@ export async function POST(req: Request) {
     p_amount_paise: r.total_paise, p_method: p.data.method ?? "upi", p_is_test: provider.isMock || process.env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") === true, p_raw: null,
   });
   if (error) return NextResponse.json({ error: "could not record payment" }, { status: 500 });
+  if (data === "confirmed") {
+    // Best effort: a failed referral reward must never fail the payment. Does nothing unless this is a referred friend's first booking.
+    await admin.rpc("reward_referral", { p_reservation: r.id, p_give_paise: REFERRAL_GIVE_PAISE, p_get_paise: REFERRAL_GET_PAISE, p_min_paise: REFERRAL_MIN_BOOKING_PAISE }).then(() => undefined, () => undefined);
+  }
   return NextResponse.json({ result: data });
 }

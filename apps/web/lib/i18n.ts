@@ -1,3 +1,4 @@
+import { REDESIGN } from "./i18n-redesign";
 export const LANGS = [
   { code: "en", name: "English" },
   { code: "hi", name: "हिन्दी" },
@@ -597,10 +598,10 @@ const mr: Dict = {
   signedInAs: "साइन इन:",
 };
 
-export const DICTS: Record<Lang, Dict> = { en, hi, gu, mr };
+export const DICTS: Record<Lang, Dict> = { en: { ...en, ...REDESIGN.en }, hi: { ...hi, ...REDESIGN.hi }, gu: { ...gu, ...REDESIGN.gu }, mr: { ...mr, ...REDESIGN.mr } };
 
 export function translate(lang: Lang, key: string, vars?: Record<string, string | number>): string {
-  const s = DICTS[lang][key] ?? en[key] ?? key;
+  const s = DICTS[lang][key] ?? DICTS.en[key] ?? key;
   return vars ? s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? "")) : s;
 }
 

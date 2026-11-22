@@ -3,6 +3,8 @@ import { computeAlerts } from "../../lib/alerts";
 import { LiveLots, type LotRow, type Live } from "../../components/LiveOccupancy";
 import { hasSupabaseEnv } from "../../lib/env";
 import { loadSeries } from "../../lib/lot-series";
+import { reservationSummary } from "../../lib/analytics";
+import { rupees } from "../../lib/referral";
 import { forecastRevenue } from "../../lib/revenue-forecast";
 import { ValetQueue, type ValetRow } from "../../components/ValetQueue";
 import { getLang } from "../../lib/lang";
@@ -42,33 +44,49 @@ export default async function Operator() {
   const waitBy = new Map<string, number>();
   for (const w of wlAll ?? []) waitBy.set(w.lot_id, (waitBy.get(w.lot_id) ?? 0) + 1);
   const rows: LotRow[] = (lots ?? []).map((l) => ({ ...l, live: byLot.get(l.id) ?? null }));
+  const since7 = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const [{ data: res7 }, { data: soon }] = await Promise.all([
+    sb.from("reservations").select("status,total_paise,duration_min").gte("created_at", since7).limit(5000),
+    sb.from("reservations").select("id").eq("status", "confirmed").gte("arrival_at", new Date().toISOString()).lte("arrival_at", in2h),
+  ]);
+  const week = reservationSummary(res7 ?? []);
+  const liveRows = [...byLot.values()].filter((l) => l.capacity > 0);
+  const occ = liveRows.reduce((n, l) => n + l.occupied, 0);
+  const cap = liveRows.reduce((n, l) => n + l.capacity, 0);
   return (
     <main className="shell">
-      <div className="top"><div className="row"><span style={{ fontSize: 44 }}></span><div><h1>{t("yourLots")}</h1><p>{user?.email}</p></div></div></div>
-      <div className="lift" style={{ display: "grid", gap: 10, marginBottom: 14 }}>
-        <Link href="/operator/lots/new" className="btn block">{t("addLot")}</Link>
-        <div className="chips"><Link href="/operator/analytics" className="chip">{t("opTabStats")}</Link><Link href="/operator/integrations" className="chip">{t("opTabFeeds")}</Link><Link href="/driver" className="chip">{t("switchDriver")}</Link></div>
+      <div className="top rowb">
+        <div><h1>{t("opOverview")}</h1><p>{user?.email}</p></div>
+        <Link href="/operator/lots/new" className="btn">{t("addLot")}</Link>
+      </div>
+      <div className="kpis" data-testid="op-kpis">
+        <div className="kpi"><div className="k">{t("kLots")}</div><div className="v">{(lots ?? []).filter((l) => l.status === "approved").length}</div><div className="s">{t("kLotsNote", { n: (lots ?? []).length })}</div></div>
+        <div className="kpi"><div className="k">{t("kInNow")}</div><div className="v">{cap ? `${occ}/${cap}` : "—"}</div><div className="s">{cap ? `${Math.round((occ / cap) * 100)}% ${t("fullNow")}` : t("noFeedYet")}</div></div>
+        <div className="kpi"><div className="k">{t("kGross7")}</div><div className="v">{rupees(week.grossPaise)}</div><div className="s">{t("kBookingsN", { n: week.confirmed })}</div></div>
+        <div className="kpi"><div className="k">{t("kArriving")}</div><div className="v">{(soon ?? []).length}</div><div className="s">{t("kNext2h")}</div></div>
       </div>
       {alerts.length > 0 && (
         <section aria-label="Alerts" data-testid="alerts" className="card">
-          <h2>Alerts</h2>
-          <ul>{alerts.map((a, i) => <li key={i}><strong>{a.severity}</strong> · <Link href={`/operator/lots/${a.lotId}`}>{a.lotName}</Link>: {a.message}</li>)}</ul>
-          <p style={{ fontSize: 12, color: "#a3acd0" }}>Alerts are shown here only; email and push notifications are not built yet.</p>
+          <h2>{t("alertsTitle")}</h2>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>{alerts.map((a, i) => <li key={i}><strong>{a.severity}</strong> · <Link href={`/operator/lots/${a.lotId}`}>{a.lotName}</Link>: {a.message}</li>)}</ul>
+          <p className="muted" style={{ marginBottom: 0 }}>Alerts are shown here only; email and push notifications are not built yet.</p>
         </section>
       )}
-      {forecasts.length > 0 && (
-        <section aria-label="Revenue forecast" data-testid="revenue-forecast" className="card">
-          <h2>{t("revenueForecast")}</h2>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr><th align="left">Lot</th><th align="right">{t("expected")}</th></tr></thead>
-            <tbody>{forecasts.map((f) => <tr key={f.name}><td>{f.name}{f.simulated ? " (demo)" : ""}</td><td align="right">₹{Math.round(f.totalPaise / 100).toLocaleString("en-IN")}</td></tr>)}</tbody>
-          </table>
-          <p style={{ fontSize: 12, color: "#a3acd0" }}>{t("revenueNote")}</p>
-        </section>
-      )}
-      <section aria-label="Valet" data-testid="valet-queue" className="card"><h2>{t("valetRequestsTitle")}</h2><ValetQueue rows={valetRows} /></section>
-      {waitBy.size > 0 && <section className="card" data-testid="waitlist-counts"><h2>⏳ {t("myWaitlist")}</h2>{(lots ?? []).filter((l) => waitBy.has(l.id)).map((l) => <div className="rowb" key={l.id}><span>{l.name}</span><strong>{waitBy.get(l.id)} {t("waitingCount")}</strong></div>)}</section>}
-      {rows.length === 0 ? <div className="card">No lots yet. Add one to get started.</div> : <LiveLots lots={rows} />}
+      <div className="grid2" style={{ marginBottom: 12 }}>
+        {forecasts.length > 0 && (
+          <section aria-label="Revenue forecast" data-testid="revenue-forecast" className="card">
+            <h2>{t("revenueForecast")}</h2>
+            <div className="tblwrap"><table className="tbl">
+              <thead><tr><th>{t("lotCol")}</th><th className="r">{t("expected")}</th></tr></thead>
+              <tbody>{forecasts.map((f) => <tr key={f.name}><td>{f.name}{f.simulated ? " (demo)" : ""}</td><td className="r">{rupees(f.totalPaise)}</td></tr>)}</tbody>
+            </table></div>
+            <p className="muted" style={{ marginBottom: 0 }}>{t("revenueNote")}</p>
+          </section>
+        )}
+        <section aria-label="Valet" data-testid="valet-queue" className="card"><h2>{t("valetRequestsTitle")}</h2><ValetQueue rows={valetRows} /></section>
+      </div>
+      {waitBy.size > 0 && <section className="card" data-testid="waitlist-counts"><h2>{t("myWaitlist")}</h2>{(lots ?? []).filter((l) => waitBy.has(l.id)).map((l) => <div className="rowb" key={l.id}><span>{l.name}</span><strong>{waitBy.get(l.id)} {t("waitingCount")}</strong></div>)}</section>}
+      {rows.length === 0 ? <div className="card">{t("noLotsYet")}</div> : <LiveLots lots={rows} />}
       <form action="/auth/signout" method="post"><button type="submit" className="btn ghost block">{t("signOut")}</button></form>
     </main>
   );

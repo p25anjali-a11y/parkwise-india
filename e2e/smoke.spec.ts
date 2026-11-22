@@ -6,8 +6,25 @@ test("health endpoint answers", async ({ request }) => {
   expect(await r.json()).toMatchObject({ status: "ok", service: "parkwise-web" });
 });
 
-test("home links to search and login", async ({ page }) => {
+test("home opens Find parking", async ({ page }) => {
   await page.goto("/");
+  await expect(page).toHaveURL(/\/search/);
+});
+
+test("invite link remembers the code and goes to sign-up", async ({ page, context }) => {
+  await page.goto("/r/ab12cd34");
+  await expect(page).toHaveURL(/\/login\?mode=up/);
+  await expect(page.getByRole("heading", { name: "Create account" })).toBeVisible();
+  expect((await context.cookies()).find((c) => c.name === "pw_ref")?.value).toBe("AB12CD34");
+});
+
+test("invite link with a bad code does not set a cookie", async ({ page, context }) => {
+  await page.goto("/r/%3Cscript%3E");
+  expect((await context.cookies()).some((c) => c.name === "pw_ref")).toBe(false);
+});
+
+test("how it works links to search and login", async ({ page }) => {
+  await page.goto("/how");
   await expect(page.getByRole("heading", { name: "Parkwise India" })).toBeVisible();
   await expect(page.getByRole("link", { name: /Find parking/ })).toHaveAttribute("href", "/search");
   await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
@@ -45,6 +62,16 @@ test("security headers are set", async ({ request }) => {
   expect(h["x-powered-by"]).toBeUndefined();
 });
 
+test("operator and rewards areas explain themselves when unconfigured or signed out", async ({ page }) => {
+  await page.goto("/rewards");
+  await expect(page.getByText(/Supabase is not configured|Sign in to get your invite code/)).toBeVisible();
+});
+
+test("operator export and referral claim refuse anonymous callers", async ({ request }) => {
+  expect([401, 503]).toContain((await request.get("/api/operator/export")).status());
+  expect([401, 503]).toContain((await request.post("/api/referrals/claim", { data: { code: "AB12CD34" } })).status());
+});
+
 test("unknown routes show the friendly 404", async ({ page }) => {
   const r = await page.goto("/definitely-not-a-page");
   expect(r?.status()).toBe(404);
@@ -77,7 +104,7 @@ test("mock payment endpoint requires sign-in", async ({ request }) => {
 });
 
 test("language can be switched to Hindi and Gujarati", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/how");
   await page.getByRole("button", { name: "हिन्दी" }).click();
   await expect(page.getByText("जगह खोजिए। दाम पहले जानिए।")).toBeVisible();
   await page.getByRole("button", { name: "ગુજરાતી" }).click();

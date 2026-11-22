@@ -9,9 +9,9 @@ export function LotFeedPanel({ lotId, endpointId, prefix, origin }: { lotId: str
   return (
     <div>
       <form action={epAction}>
-        <button disabled={epPending} type="submit">{id ? "Rotate webhook secret" : "Create webhook endpoint"}</button>
+        <button disabled={epPending} type="submit" className="btn ghost">{id ? "Rotate webhook secret" : "Create webhook endpoint"}</button>
       </form>
-      {ep.error && <p role="alert" style={{ color: "#b00" }}>{ep.error}</p>}
+      {ep.error && <p role="alert" className="err">{ep.error}</p>}
       {ep.ok && <p>{ep.ok}</p>}
       {ep.secret && <p><strong>Copy this secret now; it is not shown again:</strong> <code>{ep.secret}</code></p>}
       {id && (
@@ -20,10 +20,10 @@ export function LotFeedPanel({ lotId, endpointId, prefix, origin }: { lotId: str
         </p>
       )}
       <form action={csvAction} style={{ display: "grid", gap: 6, maxWidth: 420 }}>
-        <label>CSV snapshots (captured_at,occupied)<textarea name="csv" rows={4} placeholder="2026-11-20T10:00:00+05:30,120" /></label>
-        <button disabled={csvPending} type="submit">Upload CSV</button>
+        <label className="f">CSV snapshots (captured_at,occupied)<textarea name="csv" rows={4} placeholder="2026-11-20T10:00:00+05:30,120" style={{ font: "inherit", padding: 12, borderRadius: 12, border: "1px solid var(--line)", background: "var(--raise)", color: "var(--ink)" }} /></label>
+        <button disabled={csvPending} type="submit" className="btn ghost">Upload CSV</button>
       </form>
-      {csv.error && <p role="alert" style={{ color: "#b00" }}>{csv.error}</p>}
+      {csv.error && <p role="alert" className="err">{csv.error}</p>}
       {csv.ok && <p>{csv.ok}</p>}
     </div>
   );
