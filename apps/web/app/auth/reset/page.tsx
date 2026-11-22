@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabaseBrowser } from "../../../lib/supabase/browser";
 import { useT } from "../../../components/I18n";
 import { Mascot } from "../../../components/Mascot";
+import { PasswordInput } from "../../../components/PasswordInput";
 
 export default function Reset() {
   const { t } = useT();
@@ -43,7 +44,7 @@ export default function Reset() {
           </>
         ) : (
           <form onSubmit={go}>
-            <label className="f">{t("newPassword")}<input type="password" autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} required /></label>
+            <label className="f">{t("newPassword")}<PasswordInput value={pw} onChange={setPw} autoComplete="new-password" /></label>
             <button type="submit" className="btn blue block">{t("savePassword")}</button>
             {msg && <p className="err" role="alert">{msg}</p>}
           </form>
