@@ -34,7 +34,6 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const ps = pricingSummary((quotes.data ?? []).map((q) => ({ multiplier: Number(q.multiplier) })));
   const profile = hourlyProfile(snaps.data ?? []);
   const daily = dailyGross(rows, days);
-  const avg = rs.confirmed ? rs.grossPaise / rs.confirmed : 0;
   const perLot = lots.map((l) => ({ l, s: reservationSummary(rows.filter((r) => r.lot_id === l.id)) })).filter((x) => x.s.reservations > 0).sort((a, b) => b.s.grossPaise - a.s.grossPaise);
   // Demo lots (simulated occupancy) always get a labelled SIMULATED gate-and-app revenue on top of any real bookings.
   // Parkwise prices every vehicle the same way, whether it booked in the app or pays at the gate.
