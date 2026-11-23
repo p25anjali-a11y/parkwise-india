@@ -4,6 +4,8 @@ import { simulatedOccupancy } from "./simulated-occupancy";
 const IST_MS = 330 * 60_000;
 const DAY_MS = 86_400_000;
 const hash01 = (k: string) => { let h = 2166136261; for (let i = 0; i < k.length; i++) { h ^= k.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h / 4294967296; };
+/** Share of parked car-hours that actually pay: the rest are validated by the mall, season passes or the free grace period. */
+export const PAYING_SHARE = 0.3;
 /** Share of vehicles that booked through the app (the rest pay at the gate): 28 to 42 percent, steady per lot and day. */
 export function appShare(lotId: string, day: string): number { return 0.28 + hash01(`${lotId}:${day}:app`) * 0.14; }
 
@@ -26,9 +28,9 @@ export function simulatedDailyGross(a: { lotId: string; category: string; capaci
       if (at.getTime() > now.getTime()) break; // no revenue for hours that have not happened yet
       const occ = simulatedOccupancy({ lotId: a.lotId, category: a.category, at });
       const m = Math.min(a.rules.ceilingMultiplier, Math.max(a.rules.floorMultiplier, tierMultiplier(a.rules.tiers, occ)));
-      paise += occ * a.capacity * a.rules.baseRatePerHour * m;
-      bayHours += occ * a.capacity;
-      weighted += occ * a.capacity * m;
+      paise += occ * a.capacity * PAYING_SHARE * a.rules.baseRatePerHour * m;
+      bayHours += occ * a.capacity * PAYING_SHARE;
+      weighted += occ * a.capacity * PAYING_SHARE * m;
     }
     const day = new Date(start + IST_MS).toISOString().slice(0, 10);
     const share = appShare(a.lotId, day);
